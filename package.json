@@ -1,0 +1,72 @@
+{
+  "name": "browser-devtools-mcp",
+  "version": "0.0.0",
+  "description": "MCP Server for Browser Dev tools",
+  "private": false,
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "bin": {
+    "browser-devtools": "./dist/index.js"
+  },
+  "exports": {
+    ".": "./dist/server.js"
+  },
+  "author": "Serkan Ozal <serkanozal86@gmail.com> (https://github.com/serkan-ozal)",
+  "homepage": "https://github.com/serkan-ozal/browser-devtools-mcp",
+  "repository": "serkan-ozal/browser-devtools-mcp",
+  "license": "MIT",
+  "keywords": [
+    "ai",
+    "mcp",
+    "mcp-server",
+    "browser",
+    "dev-tools",
+    "debugger"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node ./src/index.ts",
+    "start:http": "ts-node ./src/index.ts --transport=streamable-http",
+    "watch": "tsc --watch",
+    "inspector": "npm run build && chmod 755 './dist/index.js' && npx @modelcontextprotocol/inspector dist/index.js",
+    "inspector:http": "npx @modelcontextprotocol/inspector http://localhost:3000/mcp --transport http",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint:check": "prettier --config .prettierrc.json --check ./src/*.ts ./src/**/*.ts ./src/**/**/*.ts ./src/**/**/**/*.ts",
+    "lint:format": "prettier --config .prettierrc.json --write ./src/*.ts ./src/**/*.ts ./src/**/**/*.ts ./src/**/**/**/*.ts",
+    "release:patch": "release-it --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks",
+    "release:minor": "release-it minor --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks",
+    "release:major": "release-it major --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks"
+  },
+  "files": [
+    "dist/",
+    "package.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@types/node": "^18.19.87",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
+    "eslint": "^9.26.0",
+    "eslint-plugin-import": "^2.31.0",
+    "prettier": "^3.5.3",
+    "release-it": "^17.6.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@hono/mcp": "^0.1.4",
+    "@hono/node-server": "^1.19.5",
+    "@modelcontextprotocol/sdk": "^1.23.1",
+    "@playwright/browser-chromium": "^1.57.0",
+    "@playwright/browser-firefox": "^1.57.0",
+    "@playwright/browser-webkit": "^1.57.0",
+    "commander": "^14.0.1",
+    "hono": "^4.9.9",
+    "playwright": "^1.57.0"
+  }
+}
