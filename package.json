@@ -1,7 +1,7 @@
 {
   "name": "browser-devtools-mcp",
   "version": "0.0.0",
-  "description": "MCP Server for Browser Dev tools",
+  "description": "MCP Server for Browser Dev Tools",
   "private": false,
   "type": "commonjs",
   "main": "./dist/index.js",
@@ -27,6 +27,7 @@
     "access": "public"
   },
   "scripts": {
+    "clean": "rimraf dist",
     "build": "tsc",
     "start": "ts-node ./src/index.ts",
     "start:http": "ts-node ./src/index.ts --transport=streamable-http",
@@ -44,7 +45,6 @@
     "dist/",
     "package.json",
     "README.md",
-    "CHANGELOG.md",
     "LICENSE"
   ],
   "devDependencies": {
@@ -55,6 +55,7 @@
     "eslint-plugin-import": "^2.31.0",
     "prettier": "^3.5.3",
     "release-it": "^17.6.0",
+    "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
