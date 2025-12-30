@@ -54,7 +54,7 @@ const MCP_ERRORS = {
     },
 };
 
-const SESSIONS: Map<string, McpServerSession> = new Map();
+const sessions: Map<string, McpServerSession> = new Map();
 
 function _buildMCPErrorResponse(code: number, message: string): any {
     const result = { ...MCP_TEMPLATE };
@@ -113,7 +113,7 @@ async function _createMCPServerSession(
         enableJsonResponse: true,
         sessionIdGenerator: (): string => crypto.randomUUID(),
         onsessioninitialized: async (sessionId: string): Promise<void> => {
-            SESSIONS.set(sessionId, session);
+            sessions.set(sessionId, session);
             session.initialized = true;
             logger.debug(`MCP session initialized with id ${sessionId}`);
         },
@@ -152,7 +152,7 @@ async function _createMCPServerSession(
 async function _getMCPServerSession(
     sessionId: string
 ): Promise<McpServerSession<StreamableHTTPTransport> | undefined> {
-    return SESSIONS.get(sessionId) as McpServerSession<StreamableHTTPTransport>;
+    return sessions.get(sessionId) as McpServerSession<StreamableHTTPTransport>;
 }
 
 async function _getOrCreateMCPServerSession(
@@ -160,7 +160,7 @@ async function _getOrCreateMCPServerSession(
 ): Promise<McpServerSession<StreamableHTTPTransport> | undefined> {
     const sessionId: string | undefined = ctx.req.header('mcp-session-id');
     if (sessionId) {
-        const session: McpServerSession | undefined = SESSIONS.get(sessionId);
+        const session: McpServerSession | undefined = sessions.get(sessionId);
         if (session) {
             logger.debug(`Reusing MCP session with id ${sessionId}`);
         } else {
@@ -192,7 +192,7 @@ function _registerMCPSessionClose(
             logger.error('Error occurred while closing MCP server', err);
         }
         if (transport.sessionId) {
-            const session: McpServerSession | undefined = SESSIONS.get(
+            const session: McpServerSession | undefined = sessions.get(
                 transport.sessionId
             );
             if (session) {
@@ -206,7 +206,7 @@ function _registerMCPSessionClose(
                     );
                 }
             }
-            SESSIONS.delete(transport.sessionId);
+            sessions.delete(transport.sessionId);
         }
         logger.debug(`Closing MCP session with id ${transport.sessionId} ...`);
     };
@@ -215,7 +215,7 @@ function _registerMCPSessionClose(
 function _scheduleIdleSessionCheck(): void {
     const sessionCheck: () => void = (): void => {
         const currentTime: number = Date.now();
-        for (const [sessionId, session] of SESSIONS) {
+        for (const [sessionId, session] of sessions) {
             logger.debug(
                 `Checking whether session with id ${sessionId} is idle or not ...`
             );
@@ -287,13 +287,13 @@ async function _startStreamableHTTPServer(port: number): Promise<void> {
                 | McpServerSession<StreamableHTTPTransport>
                 | undefined = await _getOrCreateMCPServerSession(ctx);
             if (!mcpSession) {
-                return ctx.json(MCP_ERRORS.sessionNotFound);
+                return ctx.json(MCP_ERRORS.sessionNotFound, 400);
             }
             mcpSession.lastActiveAt = Date.now();
             return await mcpSession.transport.handleRequest(ctx);
         } catch (err: any) {
             logger.error('Error occurred while handling MCP request', err);
-            return ctx.json(MCP_ERRORS.internalServerError);
+            return ctx.json(MCP_ERRORS.internalServerError, 500);
         }
     });
 
@@ -303,19 +303,19 @@ async function _startStreamableHTTPServer(port: number): Promise<void> {
             const sessionId: string | undefined =
                 ctx.req.header('mcp-session-id');
             if (!sessionId) {
-                return ctx.json(MCP_ERRORS.sessionNotFound);
+                return ctx.json(MCP_ERRORS.sessionNotFound, 400);
             }
             const mcpSession:
                 | McpServerSession<StreamableHTTPTransport>
                 | undefined = await _getMCPServerSession(sessionId);
             if (!mcpSession) {
-                return ctx.json(MCP_ERRORS.sessionNotFound);
+                return ctx.json(MCP_ERRORS.sessionNotFound, 400);
             }
             await mcpSession.transport.close();
             return ctx.json({ ok: true }, 200);
         } catch (err: any) {
             logger.error('Error occurred while deleting MCP session', err);
-            return ctx.json(MCP_ERRORS.internalServerError);
+            return ctx.json(MCP_ERRORS.internalServerError, 500);
         }
     });
 

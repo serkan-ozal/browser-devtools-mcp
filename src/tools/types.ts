@@ -4,8 +4,8 @@ import { McpSessionContext } from '../context';
 
 export type ToolInputSchema = ZodRawShape;
 export type ToolOutputSchema = ZodRawShape;
-export type ToolInput = {};
-export type ToolOutput = {};
+export interface ToolInput {}
+export interface ToolOutput {}
 
 export interface Tool {
     name(): string;

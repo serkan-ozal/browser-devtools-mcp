@@ -1,4 +1,4 @@
-import { launchBrowser, newPage } from './browser';
+import { getBrowser, newBrowserContext, newPage } from './browser';
 import { McpSessionContext } from './context';
 import * as logger from './logger';
 import {
@@ -6,12 +6,12 @@ import {
     SERVER_NAME,
     SERVER_VERSION,
 } from './server-info';
-import { tools, Tool, ToolInput, ToolOutput } from './tools/';
+import { tools, Tool, ToolInput, ToolOutput, ToolExecutor } from './tools';
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import type { Browser, Page } from 'playwright';
+import type { Browser, BrowserContext, Page } from 'playwright';
 
 export type McpServerConfig = {};
 
@@ -27,9 +27,15 @@ export type McpServerSession<T extends Transport = Transport> = {
 async function _createSessionContext(
     sessionIdProvider: () => string
 ): Promise<McpSessionContext> {
-    const browser: Browser = await launchBrowser();
-    const page: Page = await newPage(browser);
-    return new McpSessionContext(sessionIdProvider, browser, page);
+    const browser: Browser = await getBrowser();
+    const browserContext: BrowserContext = await newBrowserContext(browser);
+    const page: Page = await newPage(browserContext);
+    return new McpSessionContext(
+        sessionIdProvider,
+        browser,
+        browserContext,
+        page
+    );
 }
 
 export async function createServer(opts: {
@@ -75,11 +81,13 @@ export async function createServer(opts: {
         })
     );
 
+    const toolExecutor: ToolExecutor = new ToolExecutor(opts.context);
+
     const createToolCallback = (tool: Tool) => {
         return async (args: ToolInput): Promise<CallToolResult> => {
             try {
-                const response: ToolOutput = await tool.handle(
-                    opts.context,
+                const response: ToolOutput = await toolExecutor.executeTool(
+                    tool,
                     args
                 );
                 return {
