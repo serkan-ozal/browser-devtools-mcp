@@ -1,0 +1,46 @@
+name: NPM Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_scale:
+        type: choice
+        description: "Version scale"
+        required: true
+        default: "patch"
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for creating GitHub releases
+      id-token: write  # Required for MCP registry OIDC authentication
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+      - name: Configure Git User
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          registry-url: https://registry.npmjs.org
+      - name: NPM Install
+        run: npm install
+      - name: NPM Lint Check
+        run: npm run lint:check
+      - name: NPM Build
+        run: npm run build
+      - name: NPM Publish
+        run: npm run release:${{ github.event.inputs.version_scale }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          NODE_DEBUG: release-it:*
