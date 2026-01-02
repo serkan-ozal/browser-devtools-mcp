@@ -187,6 +187,9 @@ export class McpSessionContext {
         sequenceNumber: number
     ): Promise<HttpRequest> {
         const res: Response | null = await req.response();
+        const isRedirect: boolean = res
+            ? res.status() >= 300 && res.status() < 400
+            : false;
         return {
             url: req.url(),
             method: req.method() as HttpMethod,
@@ -200,7 +203,9 @@ export class McpSessionContext {
                       status: res.status(),
                       statusText: res.statusText(),
                       headers: res.headers(),
-                      body: (await res.body()).toString(),
+                      body: isRedirect
+                          ? undefined
+                          : (await res.body()).toString(),
                   }
                 : undefined,
             ok: res ? res.ok() : false,

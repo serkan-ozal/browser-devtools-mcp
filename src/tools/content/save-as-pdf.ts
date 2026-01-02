@@ -12,7 +12,8 @@ import {
     getEnumKeyTuples,
 } from '../../utils';
 
-import * as path from 'path';
+import os from 'os';
+import path from 'path';
 
 import { z } from 'zod';
 
@@ -78,7 +79,11 @@ export class SaveAsPdf implements Tool {
         return {
             outputPath: z
                 .string()
-                .describe('Directory path where PDF will be saved.'),
+                .describe(
+                    'Directory path where PDF will be saved. By default OS tmp directory is used.'
+                )
+                .optional()
+                .default(os.tmpdir()),
             name: z
                 .string()
                 .describe(

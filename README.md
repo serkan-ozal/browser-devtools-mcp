@@ -23,10 +23,9 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 ## Features
 
 ### Content Tools
-- **Screenshots**: Capture full page or specific elements (PNG/JPEG)
-- **ARIA Snapshots**: Accessibility tree capture for understanding page structure
-- **HTML/Text Extraction**: Get page content in various formats
-- **PDF Export**: Save pages as PDF documents
+- **Screenshots**: Capture full page or specific elements (PNG/JPEG) with image data
+- **HTML/Text Extraction**: Get page content with filtering, cleaning, and minification options
+- **PDF Export**: Save pages as PDF documents with customizable format and margins
 
 ### Interaction Tools
 - **Click**: Click elements by CSS selector
@@ -45,6 +44,10 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 ### Monitoring Tools
 - **Console Messages**: Capture and filter browser console logs with advanced filtering (level, search, timestamp, sequence number)
 - **HTTP Requests**: Monitor network traffic with detailed request/response data, filtering by resource type, status code, and more
+
+### Accessibility (A11Y) Tools
+- **ARIA Snapshots**: Capture semantic structure and accessibility roles in YAML format
+- **AX Tree Snapshots**: Combine Chromium's Accessibility tree with runtime visual diagnostics (bounding boxes, visibility, occlusion detection, computed styles)
 
 ## Prerequisites
 
@@ -370,7 +373,7 @@ The server can be configured using environment variables:
 Takes a screenshot of the current page or a specific element.
 
 **Parameters:**
-- `outputPath` (string, required): Directory path where screenshot will be saved
+- `outputPath` (string, optional): Directory path where screenshot will be saved (default: OS temp directory)
 - `name` (string, optional): Screenshot name (default: "screenshot")
 - `selector` (string, optional): CSS selector for element to capture
 - `fullPage` (boolean, optional): Capture full scrollable page (default: false)
@@ -378,41 +381,43 @@ Takes a screenshot of the current page or a specific element.
 
 **Returns:**
 - `filePath` (string): Full path of the saved screenshot file
-
-#### `content_take-aria-snapshot`
-Captures an ARIA (accessibility) snapshot of the current page or a specific element.
-
-**Parameters:**
-- `selector` (string, optional): CSS selector for element to snapshot
-
-**Returns:**
-- `output` (string): YAML-formatted accessibility tree with page URL and title
+- `image` (object): Screenshot image data with mimeType
 
 #### `content_get-as-html`
 Retrieves the HTML content of the current page or a specific element.
 
 **Parameters:**
-- `selector` (string, optional): CSS selector for element
+- `selector` (string, optional): CSS selector to limit the HTML content to a specific container
+- `removeScripts` (boolean, optional): Remove all script tags from the HTML (default: true)
+- `removeComments` (boolean, optional): Remove all HTML comments (default: false)
+- `removeStyles` (boolean, optional): Remove all style tags from the HTML (default: false)
+- `removeMeta` (boolean, optional): Remove all meta tags from the HTML (default: false)
+- `cleanHtml` (boolean, optional): Perform comprehensive HTML cleaning (default: false)
+- `minify` (boolean, optional): Minify the HTML output (default: false)
+- `maxLength` (number, optional): Maximum number of characters to return (default: 50000)
 
 **Returns:**
-- `html` (string): HTML content
+- `output` (string): The requested HTML content of the page
 
 #### `content_get-as-text`
-Retrieves the text content of the current page or a specific element.
+Retrieves the visible text content of the current page or a specific element.
 
 **Parameters:**
-- `selector` (string, optional): CSS selector for element
+- `selector` (string, optional): CSS selector to limit the text content to a specific container
+- `maxLength` (number, optional): Maximum number of characters to return (default: 50000)
 
 **Returns:**
-- `text` (string): Text content
+- `output` (string): The requested text content of the page
 
 #### `content_save-as-pdf`
 Saves the current page as a PDF document.
 
 **Parameters:**
-- `outputPath` (string, required): Directory path where PDF will be saved
+- `outputPath` (string, optional): Directory path where PDF will be saved (default: OS temp directory)
 - `name` (string, optional): PDF name (default: "page")
-- Additional PDF options (format, margin, etc.)
+- `format` (enum, optional): Page format - "Letter", "Legal", "Tabloid", "Ledger", "A0" through "A6" (default: "A4")
+- `printBackground` (boolean, optional): Whether to print background graphics (default: false)
+- `margin` (object, optional): Page margins with top, right, bottom, left (default: "1cm" for each)
 
 **Returns:**
 - `filePath` (string): Full path of the saved PDF file
@@ -524,6 +529,57 @@ Retrieves HTTP requests from the browser with detailed filtering.
 **Returns:**
 - `requests` (array): Array of HTTP requests with URL, method, headers, body, response, timing, and metadata
 
+### Accessibility (A11Y) Tools
+
+#### `a11y_take-aria-snapshot`
+Captures an ARIA (accessibility) snapshot of the current page or a specific element.
+
+**Parameters:**
+- `selector` (string, optional): CSS selector for element to snapshot
+
+**Returns:**
+- `output` (string): Includes the page URL, title, and a YAML-formatted accessibility tree
+
+**Usage:**
+- Use in combination with `accessibility_take-ax-tree-snapshot` for comprehensive UI analysis
+- Provides semantic structure and accessibility roles
+- Helps identify accessibility issues and page hierarchy problems
+
+#### `accessibility_take-ax-tree-snapshot`
+Captures a UI-focused snapshot by combining Chromium's Accessibility (AX) tree with runtime visual diagnostics.
+
+**Parameters:**
+- `roles` (array, optional): Optional role allowlist (button, link, textbox, checkbox, radio, combobox, switch, tab, menuitem, dialog, heading, listbox, listitem, option). If omitted, a built-in set of interactive roles is used
+- `includeStyles` (boolean, optional): Whether to include computed CSS styles for each node (default: true)
+- `includeRuntimeVisual` (boolean, optional): Whether to compute runtime visual information (bounding box, visibility, viewport) (default: true)
+- `checkOcclusion` (boolean, optional): If true, checks whether each element is visually occluded by another element using elementFromPoint() sampled at multiple points (default: false)
+- `onlyVisible` (boolean, optional): If true, only visually visible nodes are returned (default: false)
+- `onlyInViewport` (boolean, optional): If true, only nodes intersecting the viewport are returned (default: false)
+- `textPreviewMaxLength` (number, optional): Maximum length of the text preview extracted from each element (default: 80)
+- `styleProperties` (array, optional): List of CSS computed style properties to extract (default: includes display, visibility, opacity, position, z-index, colors, fonts, etc.)
+
+**Returns:**
+- `url` (string): The current page URL at the time the AX snapshot was captured
+- `title` (string): The document title of the page at the time of the snapshot
+- `axNodeCount` (number): Total number of nodes returned by Chromium Accessibility.getFullAXTree before filtering
+- `candidateCount` (number): Number of DOM-backed AX nodes that passed role filtering before enrichment
+- `enrichedCount` (number): Number of nodes included in the final enriched snapshot output
+- `truncatedBySafetyCap` (boolean): Indicates whether the result set was truncated by an internal safety cap
+- `nodes` (array): List of enriched DOM-backed AX nodes combining accessibility metadata with visual diagnostics, including:
+  - `axNodeId`, `parentAxNodeId`, `childAxNodeIds`: Tree structure
+  - `role`, `name`, `ignored`: Accessibility properties
+  - `backendDOMNodeId`, `domNodeId`, `frameId`: DOM references
+  - `localName`, `id`, `className`, `selectorHint`: Element identification
+  - `textPreview`: Short preview of rendered text content
+  - `styles`: Computed CSS styles (if includeStyles is true)
+  - `runtime`: Visual diagnostics including boundingBox, isVisible, isInViewport, and optional occlusion data
+
+**Usage:**
+- Use to detect UI issues like elements that exist semantically but are visually hidden or off-screen
+- Identify wrong layout/geometry, styling issues, and overlap/stacking/occlusion problems
+- ALWAYS use `checkOcclusion: true` when investigating UI/layout problems
+- Use alongside `a11y_take-aria-snapshot` tool for complete UI analysis
+
 ## Architecture
 
 ### Session Management
@@ -585,28 +641,6 @@ npm run build
 - `npm run lint:check` - Check code formatting
 - `npm run lint:format` - Format code
 
-### Project Structure
-
-```
-src/
-├── browser.ts          # Browser instance management
-├── config.ts           # Configuration and environment variables
-├── context.ts          # MCP session context with monitoring
-├── index.ts            # Entry point (CLI)
-├── logger.ts           # Logging utilities
-├── server.ts           # MCP server creation and tool registration
-├── server-info.ts      # Server metadata and instructions
-├── types.ts            # TypeScript type definitions
-├── utils.ts            # Utility functions
-└── tools/              # Tool implementations
-    ├── content/        # Content extraction tools
-    ├── interaction/    # User interaction tools
-    ├── monitoring/     # Monitoring and debugging tools
-    ├── navigation/     # Navigation tools
-    ├── tool-executor.ts # Tool execution engine
-    └── types.ts        # Tool type definitions
-```
-
 ## Use Cases
 
 ### For AI Coding Assistants
@@ -617,8 +651,9 @@ This server enables AI assistants to:
 2. **Monitor Network Activity**: Track API calls, analyze request/response patterns
 3. **Test User Flows**: Automate navigation and interactions
 4. **Visual Verification**: Compare visual states, verify UI changes
-5. **Accessibility Analysis**: Use ARIA snapshots to understand page structure
-6. **Performance Analysis**: Monitor HTTP request timing and failures
+5. **Content Extraction**: Get HTML/text content with filtering and cleaning options
+6. **Accessibility Analysis**: Use ARIA and AX tree snapshots to understand page structure and detect UI issues
+7. **Performance Analysis**: Monitor HTTP request timing and failures
 
 ### Example Workflow
 
@@ -626,9 +661,10 @@ This server enables AI assistants to:
 2. Take a screenshot with `content_take-screenshot` to see the current state
 3. Check console messages with `monitoring_get-console-messages` for errors
 4. Monitor HTTP requests with `monitoring_get-http-requests` to see API calls
-5. Interact with elements using `interaction_click`, `interaction_fill`, etc.
-6. Capture ARIA snapshot with `content_take-aria-snapshot` to understand structure
+5. Capture accessibility snapshots with `a11y_take-aria-snapshot` and `accessibility_take-ax-tree-snapshot` to understand page structure
+6. Interact with elements using `interaction_click`, `interaction_fill`, etc.
 7. Extract content using `content_get-as-html` or `content_get-as-text`
+8. Save the page as PDF using `content_save-as-pdf` for documentation
 
 ## Contributing
 
