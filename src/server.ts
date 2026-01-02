@@ -5,8 +5,16 @@ import {
     getServerInstructions,
     SERVER_NAME,
     SERVER_VERSION,
+    UI_DEBUGGING_POLICY,
 } from './server-info';
-import { tools, Tool, ToolInput, ToolOutput, ToolExecutor } from './tools';
+import {
+    tools,
+    Tool,
+    ToolInput,
+    ToolOutput,
+    ToolExecutor,
+    ToolOutputWithImage,
+} from './tools';
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
@@ -23,6 +31,55 @@ export type McpServerSession<T extends Transport = Transport> = {
     closed: boolean;
     lastActiveAt: number;
 };
+
+function _getImage(
+    response: ToolOutput
+): ToolOutputWithImage['image'] | undefined {
+    if (
+        'image' in response &&
+        response.image !== null &&
+        typeof response.image === 'object' &&
+        'data' in response.image &&
+        'mimeType' in response.image &&
+        Buffer.isBuffer(response.image.data) &&
+        typeof response.image.mimeType === 'string'
+    ) {
+        const image: ToolOutputWithImage['image'] = (
+            response as ToolOutputWithImage
+        ).image;
+        delete (response as any).image;
+        return image;
+    }
+}
+
+function _toResponse(response: ToolOutput): CallToolResult {
+    const image: ToolOutputWithImage['image'] | undefined = _getImage(response);
+    const contents: any[] = [];
+    contents.push({
+        type: 'text',
+        text: JSON.stringify(response, null, 2),
+    });
+    if (image) {
+        if (image.mimeType === 'image/svg+xml') {
+            contents.push({
+                type: 'text',
+                text: image.data.toString(),
+                mimeType: image.mimeType,
+            });
+        } else {
+            contents.push({
+                type: 'image',
+                data: image.data.toString('base64'),
+                mimeType: image.mimeType,
+            });
+        }
+    }
+    return {
+        content: contents,
+        structuredContent: response as any,
+        isError: false,
+    };
+}
 
 async function _createSessionContext(
     sessionIdProvider: () => string
@@ -57,16 +114,13 @@ export async function createServer(opts: {
     );
 
     const messages: any[] = [];
-    // TODO Add policies as prompts here
-    /*
     messages.push({
         role: 'user',
         content: {
             type: 'text',
-            text: <POLICY>,
+            text: UI_DEBUGGING_POLICY,
         },
     });
-    */
 
     server.registerPrompt(
         'default_system',
@@ -90,16 +144,7 @@ export async function createServer(opts: {
                     tool,
                     args
                 );
-                return {
-                    content: [
-                        {
-                            type: 'text',
-                            text: JSON.stringify(response, null, 2),
-                        },
-                    ],
-                    structuredContent: response as any,
-                    isError: false,
-                };
+                return _toResponse(response);
             } catch (error: any) {
                 return {
                     content: [

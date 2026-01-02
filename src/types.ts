@@ -81,7 +81,7 @@ export type HttpRequest = {
         status: number;
         statusText: string;
         headers: { [key: string]: string };
-        body: string;
+        body?: string;
     };
     ok: boolean;
     timestamp: number;

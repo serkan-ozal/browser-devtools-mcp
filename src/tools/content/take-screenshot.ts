@@ -3,8 +3,8 @@ import {
     Tool,
     ToolInput,
     ToolInputSchema,
-    ToolOutput,
     ToolOutputSchema,
+    ToolOutputWithImage,
 } from '../types';
 import {
     createEnumTransformer,
@@ -12,7 +12,8 @@ import {
     getEnumKeyTuples,
 } from '../../utils';
 
-import * as path from 'path';
+import os from 'os';
+import path from 'path';
 
 import type { ElementHandle } from 'playwright';
 import { z } from 'zod';
@@ -30,7 +31,9 @@ export interface TakeScreenshotInput extends ToolInput {
     type?: ScreenshotType;
 }
 
-export interface TakeScreenshotOutput extends ToolOutput {}
+export interface TakeScreenshotOutput extends ToolOutputWithImage {
+    filePath: string;
+}
 
 const DEFAULT_SCREENSHOT_NAME: string = 'screenshot';
 const DEFAULT_SCREENSHOT_TYPE: ScreenshotType = ScreenshotType.PNG;
@@ -48,7 +51,11 @@ export class TakeScreenshot implements Tool {
         return {
             outputPath: z
                 .string()
-                .describe('Directory path where screenshot will be saved.'),
+                .describe(
+                    'Directory path where screenshot will be saved. By default OS tmp directory is used.'
+                )
+                .optional()
+                .default(os.tmpdir()),
             name: z
                 .string()
                 .describe(
@@ -113,10 +120,15 @@ export class TakeScreenshot implements Tool {
             options.element = element;
         }
 
-        await context.page.screenshot(options);
+        const screenshot: Buffer<ArrayBufferLike> =
+            await context.page.screenshot(options);
 
         return {
             filePath,
+            image: {
+                data: screenshot,
+                mimeType: `image/${screenshotType}`,
+            },
         };
     }
 }

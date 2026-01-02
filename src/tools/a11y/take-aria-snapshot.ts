@@ -19,7 +19,7 @@ export interface TakeSnapshotOutput extends ToolOutput {
 
 export class TakeAriaSnapshot implements Tool {
     name(): string {
-        return 'content_take-aria-snapshot';
+        return 'a11y_take-aria-snapshot';
     }
 
     description(): string {
@@ -27,6 +27,11 @@ export class TakeAriaSnapshot implements Tool {
 Captures an ARIA (accessibility) snapshot of the current page or a specific element.
 If a selector is provided, the snapshot is scoped to that element; otherwise, the entire page is captured.
 The output includes the page URL, title, and a YAML-formatted accessibility tree.
+
+**UI Debugging Usage:**
+- Use in combination with "a11y_take-ax-tree-snapshot" tool for comprehensive UI analysis
+- Provides semantic structure and accessibility roles
+- Helps identify accessibility issues and page hierarchy problems
         `;
     }
 

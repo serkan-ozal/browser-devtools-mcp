@@ -6,6 +6,12 @@ export type ToolInputSchema = ZodRawShape;
 export type ToolOutputSchema = ZodRawShape;
 export interface ToolInput {}
 export interface ToolOutput {}
+export interface ToolOutputWithImage extends ToolOutput {
+    image?: {
+        data: Buffer;
+        mimeType: string;
+    };
+}
 
 export interface Tool {
     name(): string;
