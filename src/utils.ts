@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 export function sleep(ms: number): Promise<void> {
     return new Promise((resolve: (value: void | PromiseLike<void>) => void) =>
         setTimeout(resolve, ms)
@@ -62,4 +64,49 @@ export function formattedTimeForFilename(date = new Date()): string {
         pad(date.getMinutes()) +
         pad(date.getSeconds())
     );
+}
+
+export function newTraceId(): string {
+    return crypto.randomBytes(16).toString('hex');
+}
+
+export function newSpanId(): string {
+    return crypto.randomBytes(8).toString('hex');
+}
+
+export function normalizeSpanId(traceId: string): string {
+    const cleaned: string = traceId.trim().toLowerCase();
+    const ok: boolean =
+        /^[0-9a-f]{16}$/.test(cleaned) && cleaned !== '0'.repeat(16);
+    if (!ok) {
+        throw new Error(
+            'span id must be 16 lowercase hex chars (not all zeros)'
+        );
+    }
+    return cleaned;
+}
+
+export function normalizeTraceId(traceId: string): string {
+    const cleaned: string = traceId.trim().toLowerCase();
+    const ok: boolean =
+        /^[0-9a-f]{32}$/.test(cleaned) && cleaned !== '0'.repeat(32);
+    if (!ok) {
+        throw new Error(
+            'trace id must be 32 lowercase hex chars (not all zeros)'
+        );
+    }
+    return cleaned;
+}
+
+export function makeTraceparent(
+    traceId: string,
+    spanId: string,
+    sampled: boolean = true
+): string {
+    const v: string = '00';
+    const tid: string = normalizeTraceId(traceId);
+    const sid: string = normalizeSpanId(spanId);
+    const f: string = sampled ? '01' : '00';
+
+    return `${v}-${tid}-${sid}-${f}`;
 }

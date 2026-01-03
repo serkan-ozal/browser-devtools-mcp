@@ -44,6 +44,7 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 ### Monitoring Tools
 - **Console Messages**: Capture and filter browser console logs with advanced filtering (level, search, timestamp, sequence number)
 - **HTTP Requests**: Monitor network traffic with detailed request/response data, filtering by resource type, status code, and more
+- **Trace ID Management**: Get and set OpenTelemetry compatible trace IDs for distributed tracing across API calls
 
 ### Accessibility (A11Y) Tools
 - **ARIA Snapshots**: Capture semantic structure and accessibility roles in YAML format
@@ -528,6 +529,33 @@ Retrieves HTTP requests from the browser with detailed filtering.
 
 **Returns:**
 - `requests` (array): Array of HTTP requests with URL, method, headers, body, response, timing, and metadata
+
+#### `monitoring_get-trace-id`
+Gets the OpenTelemetry compatible trace id of the current session.
+
+**Parameters:**
+- No input parameters
+
+**Returns:**
+- `traceId` (string, optional): The OpenTelemetry compatible trace id of the current session if available
+
+#### `monitoring_new-trace-id`
+Generates a new OpenTelemetry compatible trace id and sets it to the current session.
+
+**Parameters:**
+- No input parameters
+
+**Returns:**
+- `traceId` (string): The generated new OpenTelemetry compatible trace id
+
+#### `monitoring_set-trace-id`
+Sets the OpenTelemetry compatible trace id of the current session.
+
+**Parameters:**
+- `traceId` (string, optional): The OpenTelemetry compatible trace id to be set. Leave it empty to clear the session trace id, so no OpenTelemetry trace header will be propagated from browser throughout the API calls
+
+**Returns:**
+- No return value
 
 ### Accessibility (A11Y) Tools
 

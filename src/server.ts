@@ -15,6 +15,7 @@ import {
     ToolExecutor,
     ToolOutputWithImage,
 } from './tools';
+import { newTraceId } from './utils';
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
@@ -87,12 +88,19 @@ async function _createSessionContext(
     const browser: Browser = await getBrowser();
     const browserContext: BrowserContext = await newBrowserContext(browser);
     const page: Page = await newPage(browserContext);
-    return new McpSessionContext(
+    const traceId: string = newTraceId();
+
+    const context: McpSessionContext = new McpSessionContext(
         sessionIdProvider,
         browser,
         browserContext,
-        page
+        page,
+        traceId
     );
+
+    await context.init();
+
+    return context;
 }
 
 export async function createServer(opts: {
