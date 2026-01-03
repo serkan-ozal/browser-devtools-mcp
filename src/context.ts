@@ -12,12 +12,14 @@ import {
     HttpRequest,
     HttpResourceType,
 } from './types';
+import { makeTraceparent, newSpanId } from './utils';
 
 import {
     Browser,
     BrowserContext,
     ConsoleMessage as PlaywrightConsoleMessage,
     Page,
+    Route,
     Request,
     Response,
 } from 'playwright';
@@ -27,6 +29,7 @@ export class McpSessionContext {
     private readonly httpRequests: HttpRequest[] = [];
     private readonly sessionIdProvider: () => string;
     private closed: boolean = false;
+    private traceId?: string;
     readonly browser: Browser;
     readonly browserContext: BrowserContext;
     readonly page: Page;
@@ -35,17 +38,17 @@ export class McpSessionContext {
         sessionIdProvider: () => string,
         browser: Browser,
         browserContext: BrowserContext,
-        page: Page
+        page: Page,
+        traceId?: string
     ) {
         this.sessionIdProvider = sessionIdProvider;
         this.browser = browser;
         this.browserContext = browserContext;
         this.page = page;
-
-        this._init();
+        this.traceId = traceId;
     }
 
-    private _init(): void {
+    async init(): Promise<void> {
         const me: McpSessionContext = this;
 
         let consoleMessageSequenceNumber: number = 0;
@@ -95,6 +98,32 @@ export class McpSessionContext {
                 );
             }
         });
+
+        await this.browserContext.route(
+            '**/*',
+            async (route: Route, request: Request): Promise<void> => {
+                const resourceType: string = request.resourceType();
+                const isApi: boolean =
+                    resourceType === HttpResourceType.XHR ||
+                    resourceType === HttpResourceType.FETCH;
+                const traceId: string | undefined = me.traceId;
+
+                if (!isApi || !traceId) {
+                    await route.continue();
+                    return;
+                }
+
+                const reqHeaders: Record<string, string> = request.headers();
+                const spanId: string = newSpanId();
+
+                const nextHeaders: Record<string, string> = {
+                    ...reqHeaders,
+                    traceparent: makeTraceparent(traceId, spanId),
+                };
+
+                await route.continue({ headers: nextHeaders });
+            }
+        );
     }
 
     private _toConsoleMessageLevelName(type: string): ConsoleMessageLevelName {
@@ -216,6 +245,14 @@ export class McpSessionContext {
 
     sessionId(): string {
         return this.sessionIdProvider();
+    }
+
+    getTraceId(): string | undefined {
+        return this.traceId;
+    }
+
+    setTraceId(traceId?: string): void {
+        this.traceId = traceId;
     }
 
     getConsoleMessages(): ConsoleMessage[] {
