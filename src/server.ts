@@ -1,4 +1,5 @@
 import { getBrowser, newBrowserContext, newPage } from './browser';
+import { OTEL_ENABLE } from './config';
 import { McpSessionContext } from './context';
 import * as logger from './logger';
 import {
@@ -15,7 +16,6 @@ import {
     ToolExecutor,
     ToolOutputWithImage,
 } from './tools';
-import { newTraceId } from './utils';
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
@@ -88,14 +88,13 @@ async function _createSessionContext(
     const browser: Browser = await getBrowser();
     const browserContext: BrowserContext = await newBrowserContext(browser);
     const page: Page = await newPage(browserContext);
-    const traceId: string = newTraceId();
 
     const context: McpSessionContext = new McpSessionContext(
         sessionIdProvider,
         browser,
         browserContext,
         page,
-        traceId
+        OTEL_ENABLE
     );
 
     await context.init();

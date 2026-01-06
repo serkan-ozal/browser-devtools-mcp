@@ -76,7 +76,9 @@ export async function newBrowserContext(
     browser: Browser,
     browserContextOptions: BrowserContextOptions = {}
 ): Promise<BrowserContext> {
-    return await browser.newContext();
+    return await browser.newContext({
+        bypassCSP: true,
+    });
 }
 
 export async function newPage(

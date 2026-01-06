@@ -10,7 +10,7 @@ import {
 import { z } from 'zod';
 
 export interface SetTraceIdInput extends ToolInput {
-    traceId?: string;
+    traceId: string;
 }
 
 export interface SetTraceIdOutput extends ToolOutput {}
@@ -21,23 +21,14 @@ export class SetTraceId implements Tool {
     }
 
     description(): string {
-        return `
-Sets the OpenTelemetry compatible trace id of the current session.
-Leave it empty to clear the trace id of the current session, 
-so no OpenTelemetry trace header will be propagated from browser throughout the API calls.
-        `;
+        return 'Sets the OpenTelemetry compatible trace id of the current session.';
     }
 
     inputSchema(): ToolInputSchema {
         return {
             traceId: z
                 .string()
-                .describe(
-                    `
-The OpenTelemetry compatible trace id to be set. 
-Leave it empty to clear the session trace id.`
-                )
-                .optional(),
+                .describe('The OpenTelemetry compatible trace id to be set.'),
         };
     }
 
@@ -49,7 +40,7 @@ Leave it empty to clear the session trace id.`
         context: McpSessionContext,
         args: SetTraceIdInput
     ): Promise<SetTraceIdOutput> {
-        context.setTraceId(args.traceId);
+        await context.setTraceId(args.traceId);
 
         return {};
     }

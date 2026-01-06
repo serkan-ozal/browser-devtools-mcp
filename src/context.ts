@@ -3,6 +3,7 @@ import {
     HTTP_REQUESTS_BUFFER_SIZE,
 } from './config';
 import * as logger from './logger';
+import { OTELController } from './otel/otel-controller';
 import {
     ConsoleMessage,
     ConsoleMessageLevel,
@@ -12,14 +13,13 @@ import {
     HttpRequest,
     HttpResourceType,
 } from './types';
-import { makeTraceparent, newSpanId } from './utils';
+import { newTraceId } from './utils';
 
 import {
     Browser,
     BrowserContext,
     ConsoleMessage as PlaywrightConsoleMessage,
     Page,
-    Route,
     Request,
     Response,
 } from 'playwright';
@@ -28,6 +28,9 @@ export class McpSessionContext {
     private readonly consoleMessages: ConsoleMessage[] = [];
     private readonly httpRequests: HttpRequest[] = [];
     private readonly sessionIdProvider: () => string;
+    private readonly otelEnabled: boolean;
+    private readonly otelController: OTELController;
+    private initialized: boolean = false;
     private closed: boolean = false;
     private traceId?: string;
     readonly browser: Browser;
@@ -39,16 +42,25 @@ export class McpSessionContext {
         browser: Browser,
         browserContext: BrowserContext,
         page: Page,
-        traceId?: string
+        otelEnabled: boolean
     ) {
         this.sessionIdProvider = sessionIdProvider;
         this.browser = browser;
         this.browserContext = browserContext;
         this.page = page;
-        this.traceId = traceId;
+        this.otelEnabled = otelEnabled;
+        this.otelController = new OTELController(this.browserContext);
     }
 
     async init(): Promise<void> {
+        if (this.closed) {
+            throw new Error('Session context is already closed');
+        }
+
+        if (this.initialized) {
+            throw new Error('Session context is already initialized');
+        }
+
         const me: McpSessionContext = this;
 
         let consoleMessageSequenceNumber: number = 0;
@@ -99,31 +111,14 @@ export class McpSessionContext {
             }
         });
 
-        await this.browserContext.route(
-            '**/*',
-            async (route: Route, request: Request): Promise<void> => {
-                const resourceType: string = request.resourceType();
-                const isApi: boolean =
-                    resourceType === HttpResourceType.XHR ||
-                    resourceType === HttpResourceType.FETCH;
-                const traceId: string | undefined = me.traceId;
+        if (this.otelEnabled) {
+            this.traceId = newTraceId();
+            await this.otelController.init({
+                traceId: this.traceId,
+            });
+        }
 
-                if (!isApi || !traceId) {
-                    await route.continue();
-                    return;
-                }
-
-                const reqHeaders: Record<string, string> = request.headers();
-                const spanId: string = newSpanId();
-
-                const nextHeaders: Record<string, string> = {
-                    ...reqHeaders,
-                    traceparent: makeTraceparent(traceId, spanId),
-                };
-
-                await route.continue({ headers: nextHeaders });
-            }
-        );
+        this.initialized = true;
     }
 
     private _toConsoleMessageLevelName(type: string): ConsoleMessageLevelName {
@@ -211,14 +206,45 @@ export class McpSessionContext {
         };
     }
 
+    private _isBodyLikelyPresent(status: number, method: string): boolean {
+        if (method === 'HEAD' || method === 'OPTIONS') {
+            return false;
+        }
+        if (status === 204 || status === 304) {
+            return false;
+        }
+        if (status >= 300 && status < 400) {
+            // redirects
+            return false;
+        }
+        return true;
+    }
+
+    private async _safeReadResponseBody(
+        res: Response
+    ): Promise<string | undefined> {
+        try {
+            const req: Request = res.request();
+            const method: string = req.method();
+            const status: number = res.status();
+
+            if (!this._isBodyLikelyPresent(status, method)) {
+                return undefined;
+            }
+
+            const buf: Buffer = await res.body(); // may throw
+            return buf.toString('utf-8');
+        } catch {
+            // This is the important part: CDP can't always provide body.
+            return undefined;
+        }
+    }
+
     private async _toHttpRequest(
         req: Request,
         sequenceNumber: number
     ): Promise<HttpRequest> {
         const res: Response | null = await req.response();
-        const isRedirect: boolean = res
-            ? res.status() >= 300 && res.status() < 400
-            : false;
         return {
             url: req.url(),
             method: req.method() as HttpMethod,
@@ -232,9 +258,7 @@ export class McpSessionContext {
                       status: res.status(),
                       statusText: res.statusText(),
                       headers: res.headers(),
-                      body: isRedirect
-                          ? undefined
-                          : (await res.body()).toString(),
+                      body: await this._safeReadResponseBody(res),
                   }
                 : undefined,
             ok: res ? res.ok() : false,
@@ -247,12 +271,16 @@ export class McpSessionContext {
         return this.sessionIdProvider();
     }
 
-    getTraceId(): string | undefined {
+    async getTraceId(): Promise<string | undefined> {
         return this.traceId;
     }
 
-    setTraceId(traceId?: string): void {
+    async setTraceId(traceId: string): Promise<void> {
+        if (!this.otelEnabled) {
+            throw new Error('OTEL is not enabled');
+        }
         this.traceId = traceId;
+        await this.otelController.setTraceId(this.page, traceId);
     }
 
     getConsoleMessages(): ConsoleMessage[] {
@@ -267,6 +295,11 @@ export class McpSessionContext {
         if (this.closed) {
             return false;
         }
+
+        logger.debug(
+            `Closing OTEL controller of the MCP session with id ${this.sessionIdProvider()} ...`
+        );
+        await this.otelController.close();
 
         // Page(s) owned by browser context are already closed by the browser context itself
 
