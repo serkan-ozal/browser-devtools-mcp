@@ -366,6 +366,10 @@ The server can be configured using environment variables:
 | `SESSION_CLOSE_ON_SOCKET_CLOSE` | Close session when socket closes | `false` |
 | `CONSOLE_MESSAGES_BUFFER_SIZE` | Maximum console messages to buffer | `1000` |
 | `HTTP_REQUESTS_BUFFER_SIZE` | Maximum HTTP requests to buffer | `1000` |
+| `BROWSER_HEADLESS_ENABLE` | Run browser in headless mode | `true` |
+| `BROWSER_PERSISTENT_ENABLE` | Use persistent browser context (preserves cookies, localStorage, etc.) | `false` |
+| `BROWSER_PERSISTENT_USER_DATA_DIR` | Directory for persistent browser context user data | `./browser-devtools-mcp` |
+| `BROWSER_USE_INSTALLED_ON_SYSTEM` | Use system-installed Chrome browser instead of Playwright's bundled browser | `false` |
 | `BROWSER_EXECUTABLE_PATH` | Custom browser executable path | (uses Playwright default) |
 | `OTEL_ENABLE` | Enable OpenTelemetry integration | `false` |
 | `OTEL_SERVICE_NAME` | OpenTelemetry service name | `frontend` |
@@ -641,7 +645,24 @@ The server supports multiple browser engines:
 - **Firefox**
 - **WebKit**
 
-Browser instances are shared across sessions for efficiency, but each session has its own isolated browser context.
+**Browser Configuration:**
+- **Headless Mode**: By default, browsers run in headless mode (`BROWSER_HEADLESS_ENABLE=true`). Set to `false` to see the browser window.
+- **Persistent Context**: When enabled (`BROWSER_PERSISTENT_ENABLE=true`), browser contexts persist across sessions, preserving:
+  - Cookies and session data
+  - LocalStorage and IndexedDB
+  - Browser extensions and settings
+  - User preferences
+  
+  Persistent contexts are shared across sessions and are not automatically closed when sessions end.
+  
+- **System Browser**: When enabled (`BROWSER_USE_INSTALLED_ON_SYSTEM=true`), the server uses the system-installed Chrome browser instead of Playwright's bundled browser. This is useful for:
+  - Testing with the exact browser version users have
+  - Using browser extensions installed on the system
+  - Better compatibility with certain web applications
+  
+  **Note:** System browser support is currently only available for Chromium/Chrome.
+
+Browser instances are shared across sessions for efficiency. Each session gets its own isolated browser context, unless persistent context is enabled (in which case contexts are shared).
 
 ### Buffering & Filtering
 
