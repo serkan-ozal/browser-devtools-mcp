@@ -1,3 +1,5 @@
+import path from 'path';
+
 export const PORT: number = Number(process.env.PORT) || 3000;
 export const SESSION_IDLE_SECONDS: number =
     Number(process.env.SESSION_IDLE_SECONDS) || 300;
@@ -9,6 +11,16 @@ export const CONSOLE_MESSAGES_BUFFER_SIZE: number =
     Number(process.env.CONSOLE_MESSAGES_BUFFER_SIZE) || 1_000;
 export const HTTP_REQUESTS_BUFFER_SIZE: number =
     Number(process.env.HTTP_REQUESTS_BUFFER_SIZE) || 1_000;
+export const BROWSER_HEADLESS_ENABLE: boolean =
+    (process.env.BROWSER_HEADLESS_ENABLE || 'true') === 'true';
+export const BROWSER_PERSISTENT_ENABLE: boolean =
+    process.env.BROWSER_PERSISTENT_ENABLE === 'true';
+export const BROWSER_PERSISTENT_USER_DATA_DIR: string =
+    process.env.BROWSER_PERSISTENT_USER_DATA_DIR ||
+    path.join(process.cwd(), 'browser-devtools-mcp');
+export const BROWSER_USE_INSTALLED_ON_SYSTEM: boolean =
+    process.env.BROWSER_USE_INSTALLED_ON_SYSTEM === 'true';
+
 export const BROWSER_EXECUTABLE_PATH: string | undefined =
     process.env.BROWSER_EXECUTABLE_PATH;
 export const OTEL_ENABLE: boolean = process.env.OTEL_ENABLE === 'true';

@@ -2,7 +2,12 @@
 
 import * as config from './config';
 import * as logger from './logger';
-import { createSession, McpServerConfig, McpServerSession } from './server';
+import {
+    createServer,
+    createSession,
+    McpServerConfig,
+    McpServerSession,
+} from './server';
 
 import crypto from 'crypto';
 import { Socket } from 'net';
@@ -96,36 +101,22 @@ function _getConfig(): McpServerConfig {
 }
 
 async function _startStdioServer(): Promise<void> {
-    await createSession(_getConfig(), new StdioServerTransport());
+    const transport: StdioServerTransport = new StdioServerTransport();
+    await createServer(transport, {
+        config: _getConfig(),
+    });
 }
 
-async function _createMCPServerSession(
-    ctx: Context
-): Promise<McpServerSession<StreamableHTTPTransport>> {
-    let session: McpServerSession<StreamableHTTPTransport>;
-
-    // Get MCP server config
-    const serverConfig: McpServerConfig = _getConfig();
-
-    // Create new instances of MCP Server and Transport for each incoming request
-    const transport = new StreamableHTTPTransport({
-        // Change to `false` if you want to enable SSE in responses.
-        enableJsonResponse: true,
-        sessionIdGenerator: (): string => crypto.randomUUID(),
-        onsessioninitialized: async (sessionId: string): Promise<void> => {
-            sessions.set(sessionId, session);
-            session.initialized = true;
-            logger.debug(`MCP session initialized with id ${sessionId}`);
-        },
-        onsessionclosed: async (sessionId: string): Promise<void> => {
-            logger.debug(`Closing MCP session closed with id ${sessionId} ...`);
-            await transport.close();
-            logger.debug(`MCP session closed with id ${sessionId}`);
-        },
-    });
-
+function _createSession(
+    ctx: Context,
+    transport: StreamableHTTPTransport,
+    server: McpServer
+): McpServerSession<StreamableHTTPTransport> {
     // Create MCP session with MCP server
-    session = await createSession(serverConfig, transport);
+    const session: McpServerSession<StreamableHTTPTransport> = createSession(
+        transport,
+        server
+    );
 
     // Register hook to close the associated MCP session on socket close
     const socket: Socket = ctx.env.incoming.socket as Socket;
@@ -146,29 +137,74 @@ async function _createMCPServerSession(
 
     logger.debug(`Created MCP server session with id ${transport.sessionId}`);
 
-    return session;
+    return session as McpServerSession<StreamableHTTPTransport>;
 }
 
-async function _getMCPServerSession(
-    sessionId: string
-): Promise<McpServerSession<StreamableHTTPTransport> | undefined> {
-    return sessions.get(sessionId) as McpServerSession<StreamableHTTPTransport>;
-}
-
-async function _getOrCreateMCPServerSession(
+async function _createTransport(
     ctx: Context
-): Promise<McpServerSession<StreamableHTTPTransport> | undefined> {
+): Promise<StreamableHTTPTransport> {
+    // Get MCP server config
+    const serverConfig: McpServerConfig = _getConfig();
+    const holder: {
+        server?: McpServer;
+    } = {};
+
+    // Create new instances of MCP Server and Transport for each incoming request
+    const transport = new StreamableHTTPTransport({
+        // Change to `false` if you want to enable SSE in responses.
+        enableJsonResponse: true,
+        sessionIdGenerator: (): string => crypto.randomUUID(),
+        onsessioninitialized: async (sessionId: string): Promise<void> => {
+            const session: McpServerSession<StreamableHTTPTransport> =
+                _createSession(ctx, transport, holder.server!);
+            sessions.set(sessionId, session);
+            logger.debug(`MCP session initialized with id ${sessionId}`);
+        },
+        onsessionclosed: async (sessionId: string): Promise<void> => {
+            logger.debug(`Closing MCP session closed with id ${sessionId} ...`);
+            await transport.close();
+            logger.debug(`MCP session closed with id ${sessionId}`);
+        },
+    });
+
+    holder.server = await createServer(transport, {
+        config: serverConfig,
+    });
+
+    return transport;
+}
+
+async function _getTransport(
+    ctx: Context
+): Promise<StreamableHTTPTransport | undefined> {
     const sessionId: string | undefined = ctx.req.header('mcp-session-id');
     if (sessionId) {
         const session: McpServerSession | undefined = sessions.get(sessionId);
         if (session) {
             logger.debug(`Reusing MCP session with id ${sessionId}`);
+            return (session as McpServerSession<StreamableHTTPTransport>)
+                .transport;
+        }
+    }
+    return undefined;
+}
+
+async function _getOrCreateTransport(
+    ctx: Context
+): Promise<StreamableHTTPTransport | undefined> {
+    const sessionId: string | undefined = ctx.req.header('mcp-session-id');
+    if (sessionId) {
+        const session: McpServerSession | undefined = sessions.get(sessionId);
+        if (session) {
+            logger.debug(`Reusing MCP session with id ${sessionId}`);
+            return (session as McpServerSession<StreamableHTTPTransport>)
+                .transport;
         } else {
             logger.debug(`No MCP session could be found with id ${sessionId}`);
+            return undefined;
         }
-        return session as McpServerSession<StreamableHTTPTransport>;
     }
-    return await _createMCPServerSession(ctx);
+    return await _createTransport(ctx);
 }
 
 function _registerMCPSessionClose(
@@ -197,13 +233,16 @@ function _registerMCPSessionClose(
             );
             if (session) {
                 session.closed = true;
-                try {
-                    await session.context.close();
-                } catch (err: any) {
-                    logger.error(
-                        'Error occurred while closing MCP session context',
-                        err
-                    );
+                if (session.context) {
+                    try {
+                        await session.context.close();
+                        logger.debug('Closed MCP session context');
+                    } catch (err: any) {
+                        logger.error(
+                            'Error occurred while closing MCP session context',
+                            err
+                        );
+                    }
                 }
             }
             sessions.delete(transport.sessionId);
@@ -246,6 +285,21 @@ function _scheduleIdleSessionCheck(): void {
     setInterval(sessionCheck, config.SESSION_IDLE_CHECK_SECONDS * 1000);
 }
 
+async function _logRequest(ctx: Context): Promise<void> {
+    const reqClone: Request = ctx.req.raw.clone();
+    logger.debug(`Got request: ${await reqClone.json()}`);
+}
+
+function _markSessionAsActive(ctx: Context): void {
+    const sessionId: string | undefined = ctx.req.header('mcp-session-id');
+    if (sessionId) {
+        const session: McpServerSession | undefined = sessions.get(sessionId);
+        if (session) {
+            session.lastActiveAt = Date.now();
+        }
+    }
+}
+
 const app = new Hono<{ Bindings: Env }>();
 
 async function _startStreamableHTTPServer(port: number): Promise<void> {
@@ -283,14 +337,19 @@ async function _startStreamableHTTPServer(port: number): Promise<void> {
     // MCP Post message
     app.post('/mcp', async (ctx: Context): Promise<any> => {
         try {
-            const mcpSession:
-                | McpServerSession<StreamableHTTPTransport>
-                | undefined = await _getOrCreateMCPServerSession(ctx);
-            if (!mcpSession) {
+            if (logger.isDebugEnabled()) {
+                await _logRequest(ctx);
+            }
+
+            const transport: StreamableHTTPTransport | undefined =
+                await _getOrCreateTransport(ctx);
+            if (!transport) {
                 return ctx.json(MCP_ERRORS.sessionNotFound, 400);
             }
-            mcpSession.lastActiveAt = Date.now();
-            return await mcpSession.transport.handleRequest(ctx);
+
+            _markSessionAsActive(ctx);
+
+            return await transport.handleRequest(ctx);
         } catch (err: any) {
             logger.error('Error occurred while handling MCP request', err);
             return ctx.json(MCP_ERRORS.internalServerError, 500);
@@ -300,18 +359,12 @@ async function _startStreamableHTTPServer(port: number): Promise<void> {
     // MCP Delete session
     app.delete('/mcp', async (ctx: Context): Promise<any> => {
         try {
-            const sessionId: string | undefined =
-                ctx.req.header('mcp-session-id');
-            if (!sessionId) {
+            const transport: StreamableHTTPTransport | undefined =
+                await _getTransport(ctx);
+            if (!transport) {
                 return ctx.json(MCP_ERRORS.sessionNotFound, 400);
             }
-            const mcpSession:
-                | McpServerSession<StreamableHTTPTransport>
-                | undefined = await _getMCPServerSession(sessionId);
-            if (!mcpSession) {
-                return ctx.json(MCP_ERRORS.sessionNotFound, 400);
-            }
-            await mcpSession.transport.close();
+            await transport.close();
             return ctx.json({ ok: true }, 200);
         } catch (err: any) {
             logger.error('Error occurred while deleting MCP session', err);

@@ -1,12 +1,48 @@
+import { BrowserContextInfo, newBrowserContext, newPage } from '../browser';
+import { OTEL_ENABLE } from '../config';
 import { McpSessionContext } from '../context';
 import * as logger from '../logger';
 import { Tool, ToolInput, ToolOutput } from './types';
 
-export class ToolExecutor {
-    private readonly context: McpSessionContext;
+import type { Page } from 'playwright';
 
-    constructor(context: McpSessionContext) {
-        this.context = context;
+export class ToolExecutor {
+    private readonly sessionIdProvider: () => string;
+    private sessionContext?: McpSessionContext;
+
+    constructor(sessionIdProvider: () => string) {
+        this.sessionIdProvider = sessionIdProvider;
+    }
+
+    private async _createSessionContext(): Promise<McpSessionContext> {
+        const browserContextInfo: BrowserContextInfo =
+            await newBrowserContext();
+        const page: Page = await newPage(browserContextInfo.browserContext);
+        const sessionId: string = this.sessionIdProvider();
+
+        const context: McpSessionContext = new McpSessionContext(
+            sessionId,
+            browserContextInfo.browserContext,
+            page,
+            {
+                closeBrowserContextOnClose: !browserContextInfo.shared,
+                otelEnable: OTEL_ENABLE,
+            }
+        );
+
+        await context.init();
+
+        return context;
+    }
+
+    private async _sessionContext(): Promise<McpSessionContext> {
+        if (!this.sessionContext) {
+            this.sessionContext = await this._createSessionContext();
+            logger.debug(
+                `Created session context on the first tool call for the session with id ${this.sessionContext.sessionId()}`
+            );
+        }
+        return this.sessionContext;
     }
 
     async executeTool(tool: Tool, args: ToolInput): Promise<ToolOutput> {
@@ -14,7 +50,9 @@ export class ToolExecutor {
             `Executing tool ${tool.name()} with input: ${logger.toJson(args)}`
         );
         try {
-            const result: ToolOutput = await tool.handle(this.context, args);
+            const sessionContext: McpSessionContext =
+                await this._sessionContext();
+            const result: ToolOutput = await tool.handle(sessionContext, args);
             logger.debug(
                 `Executed tool ${tool.name()} and got output: ${logger.toJson(result)}`
             );

@@ -1,5 +1,3 @@
-import { getBrowser, newBrowserContext, newPage } from './browser';
-import { OTEL_ENABLE } from './config';
 import { McpSessionContext } from './context';
 import * as logger from './logger';
 import {
@@ -20,15 +18,13 @@ import {
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import type { Browser, BrowserContext, Page } from 'playwright';
 
 export type McpServerConfig = {};
 
 export type McpServerSession<T extends Transport = Transport> = {
     transport: T;
     server: McpServer;
-    context: McpSessionContext;
-    initialized: boolean;
+    context?: McpSessionContext;
     closed: boolean;
     lastActiveAt: number;
 };
@@ -82,30 +78,12 @@ function _toResponse(response: ToolOutput): CallToolResult {
     };
 }
 
-async function _createSessionContext(
-    sessionIdProvider: () => string
-): Promise<McpSessionContext> {
-    const browser: Browser = await getBrowser();
-    const browserContext: BrowserContext = await newBrowserContext(browser);
-    const page: Page = await newPage(browserContext);
-
-    const context: McpSessionContext = new McpSessionContext(
-        sessionIdProvider,
-        browser,
-        browserContext,
-        page,
-        OTEL_ENABLE
-    );
-
-    await context.init();
-
-    return context;
-}
-
-export async function createServer(opts: {
-    config?: McpServerConfig;
-    context: McpSessionContext;
-}): Promise<McpServer> {
+export async function createServer(
+    transport: Transport,
+    opts: {
+        config?: McpServerConfig;
+    }
+): Promise<McpServer> {
     const server: McpServer = new McpServer(
         {
             name: SERVER_NAME,
@@ -142,7 +120,9 @@ export async function createServer(opts: {
         })
     );
 
-    const toolExecutor: ToolExecutor = new ToolExecutor(opts.context);
+    const toolExecutor: ToolExecutor = new ToolExecutor(
+        (): string => transport.sessionId as string
+    );
 
     const createToolCallback = (tool: Tool) => {
         return async (args: ToolInput): Promise<CallToolResult> => {
@@ -176,29 +156,18 @@ export async function createServer(opts: {
         );
     });
 
+    await server.connect(transport);
+
     return server;
 }
 
-export async function createSession<T extends Transport = Transport>(
-    config: McpServerConfig | undefined,
-    transport: T
-): Promise<McpServerSession<T>> {
-    const sessionContext: McpSessionContext = await _createSessionContext(
-        (): string => transport.sessionId as string
-    );
-
-    const server: McpServer = await createServer({
-        config,
-        context: sessionContext,
-    });
-
-    await server.connect(transport);
-
+export function createSession<T extends Transport = Transport>(
+    transport: T,
+    server: McpServer
+): McpServerSession<T> {
     return {
         transport,
         server,
-        context: sessionContext,
-        initialized: false,
         closed: false,
         lastActiveAt: Date.now(),
     };

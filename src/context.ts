@@ -16,7 +16,6 @@ import {
 import { newTraceId } from './utils';
 
 import {
-    Browser,
     BrowserContext,
     ConsoleMessage as PlaywrightConsoleMessage,
     Page,
@@ -24,31 +23,33 @@ import {
     Response,
 } from 'playwright';
 
+export type McpSessionContextOptions = {
+    closeBrowserContextOnClose: boolean;
+    otelEnable: boolean;
+};
+
 export class McpSessionContext {
+    private readonly _sessionId: string;
+    private readonly options: McpSessionContextOptions;
+    private readonly otelController: OTELController;
     private readonly consoleMessages: ConsoleMessage[] = [];
     private readonly httpRequests: HttpRequest[] = [];
-    private readonly sessionIdProvider: () => string;
-    private readonly otelEnabled: boolean;
-    private readonly otelController: OTELController;
     private initialized: boolean = false;
     private closed: boolean = false;
     private traceId?: string;
-    readonly browser: Browser;
     readonly browserContext: BrowserContext;
     readonly page: Page;
 
     constructor(
-        sessionIdProvider: () => string,
-        browser: Browser,
+        sessionId: string,
         browserContext: BrowserContext,
         page: Page,
-        otelEnabled: boolean
+        options: McpSessionContextOptions
     ) {
-        this.sessionIdProvider = sessionIdProvider;
-        this.browser = browser;
+        this._sessionId = sessionId;
         this.browserContext = browserContext;
         this.page = page;
-        this.otelEnabled = otelEnabled;
+        this.options = options;
         this.otelController = new OTELController(this.browserContext);
     }
 
@@ -111,7 +112,7 @@ export class McpSessionContext {
             }
         });
 
-        if (this.otelEnabled) {
+        if (this.options.otelEnable) {
             this.traceId = newTraceId();
             await this.otelController.init({
                 traceId: this.traceId,
@@ -268,7 +269,7 @@ export class McpSessionContext {
     }
 
     sessionId(): string {
-        return this.sessionIdProvider();
+        return this._sessionId;
     }
 
     async getTraceId(): Promise<string | undefined> {
@@ -276,7 +277,7 @@ export class McpSessionContext {
     }
 
     async setTraceId(traceId: string): Promise<void> {
-        if (!this.otelEnabled) {
+        if (!this.options.otelEnable) {
             throw new Error('OTEL is not enabled');
         }
         this.traceId = traceId;
@@ -297,22 +298,36 @@ export class McpSessionContext {
         }
 
         logger.debug(
-            `Closing OTEL controller of the MCP session with id ${this.sessionIdProvider()} ...`
+            `Closing OTEL controller of the MCP session with id ${this._sessionId} ...`
         );
         await this.otelController.close();
 
         // Page(s) owned by browser context are already closed by the browser context itself
 
-        try {
-            logger.debug(
-                `Closing browser context of the MCP session with id ${this.sessionIdProvider()} ...`
-            );
-            await this.browserContext.close();
-        } catch (err: any) {
-            logger.debug(
-                `Error occurred while closing browser context of the MCP session with id ${this.sessionIdProvider()} ...`,
-                err
-            );
+        if (this.options.closeBrowserContextOnClose) {
+            try {
+                logger.debug(
+                    `Closing browser context of the MCP session with id ${this._sessionId} ...`
+                );
+                await this.browserContext.close();
+            } catch (err: any) {
+                logger.debug(
+                    `Error occurred while closing browser context of the MCP session with id ${this._sessionId} ...`,
+                    err
+                );
+            }
+        } else {
+            try {
+                logger.debug(
+                    `Closing page of the MCP session with id ${this._sessionId} ...`
+                );
+                await this.page.close();
+            } catch (err: any) {
+                logger.debug(
+                    `Error occurred while closing page of the MCP session with id ${this._sessionId} ...`,
+                    err
+                );
+            }
         }
 
         this.consoleMessages.length = 0;

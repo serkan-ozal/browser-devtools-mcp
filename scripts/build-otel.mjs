@@ -16,4 +16,4 @@ await esbuild.build({
     globalName: '__mcpOtelBundle',
 });
 
-console.log('Built OTEL initialized bundle:', OUT_FILE);
+console.log('Built OTEL initializer bundle:', OUT_FILE);
