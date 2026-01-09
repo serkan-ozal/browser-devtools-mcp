@@ -49,7 +49,7 @@ export interface GetHttpRequestsOutput extends ToolOutput {
 
 export class GetHttpRequests implements Tool {
     name(): string {
-        return 'monitoring_get-http-requests';
+        return 'o11y_get-http-requests';
     }
 
     description(): string {

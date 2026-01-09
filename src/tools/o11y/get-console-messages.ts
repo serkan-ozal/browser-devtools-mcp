@@ -43,7 +43,7 @@ export interface GetConsoleMessagesOutput extends ToolOutput {
 
 export class GetConsoleMessages implements Tool {
     name(): string {
-        return 'monitoring_get-console-messages';
+        return 'o11y_get-console-messages';
     }
 
     description(): string {

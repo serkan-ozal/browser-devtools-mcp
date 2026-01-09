@@ -37,6 +37,8 @@ export class McpSessionContext {
     private initialized: boolean = false;
     private closed: boolean = false;
     private traceId?: string;
+    private _numOfInFlightRequests: number = 0;
+    private _lastNetworkActivityTimestamp: number = 0;
     readonly browserContext: BrowserContext;
     readonly page: Page;
 
@@ -89,7 +91,13 @@ export class McpSessionContext {
         });
 
         let httpRequestSequenceNumber: number = 0;
+        this.page.on('request', async (req: Request): Promise<void> => {
+            me._numOfInFlightRequests++;
+            me._lastNetworkActivityTimestamp = Date.now();
+        });
         this.page.on('requestfinished', async (req: Request): Promise<void> => {
+            me._numOfInFlightRequests--;
+            me._lastNetworkActivityTimestamp = Date.now();
             me.httpRequests.push(
                 await me._toHttpRequest(req, ++httpRequestSequenceNumber)
             );
@@ -101,6 +109,8 @@ export class McpSessionContext {
             }
         });
         this.page.on('requestfailed', async (req: Request): Promise<void> => {
+            me._numOfInFlightRequests--;
+            me._lastNetworkActivityTimestamp = Date.now();
             me.httpRequests.push(
                 await me._toHttpRequest(req, ++httpRequestSequenceNumber)
             );
@@ -266,6 +276,14 @@ export class McpSessionContext {
             timestamp: Math.floor(req.timing().startTime),
             sequenceNumber,
         };
+    }
+
+    numOfInFlightRequests(): number {
+        return this._numOfInFlightRequests;
+    }
+
+    lastNetworkActivityTimestamp(): number {
+        return this._lastNetworkActivityTimestamp;
     }
 
     sessionId(): string {
