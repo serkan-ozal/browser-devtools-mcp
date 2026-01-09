@@ -6,6 +6,7 @@ import { Fill } from './fill';
 import { Hover } from './hover';
 import { PressKey } from './press-key';
 import { Select } from './select';
+import { Scroll } from './scroll';
 
 export const tools: Tool[] = [
     new Click(),
@@ -15,4 +16,5 @@ export const tools: Tool[] = [
     new Hover(),
     new PressKey(),
     new Select(),
+    new Scroll(),
 ];

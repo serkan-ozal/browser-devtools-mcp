@@ -35,6 +35,7 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 - **Press Key**: Simulate keyboard input
 - **Select**: Select dropdown options
 - **Drag**: Drag and drop operations
+- **Scroll**: Scroll the page viewport or specific scrollable elements with multiple modes (by, to, top, bottom, left, right)
 - **Evaluate**: Execute JavaScript in page context
 
 ### Navigation Tools
@@ -480,6 +481,39 @@ Performs drag and drop operation.
 **Parameters:**
 - `sourceSelector` (string, required): CSS selector for the source element
 - `targetSelector` (string, required): CSS selector for the target element
+
+#### `interaction_scroll`
+Scrolls the page viewport or a specific scrollable element.
+
+**Parameters:**
+- `mode` (enum, optional): Scroll mode - "by" (relative delta), "to" (absolute position), "top", "bottom", "left", "right" (default: "by")
+- `selector` (string, optional): CSS selector for a scrollable container. If omitted, scrolls the document viewport
+- `dx` (number, optional): Horizontal scroll delta in pixels (used when mode="by", default: 0)
+- `dy` (number, optional): Vertical scroll delta in pixels (used when mode="by", default: 0)
+- `x` (number, optional): Absolute horizontal scroll position in pixels (used when mode="to")
+- `y` (number, optional): Absolute vertical scroll position in pixels (used when mode="to")
+- `behavior` (enum, optional): Native scroll behavior - "auto" or "smooth" (default: "auto")
+
+**Returns:**
+- `mode` (string): The scroll mode used
+- `selector` (string | null): The selector of the scroll container if provided; otherwise null (document viewport)
+- `behavior` (string): The scroll behavior used
+- `before` (object): Scroll metrics before the scroll action (x, y, scrollWidth, scrollHeight, clientWidth, clientHeight)
+- `after` (object): Scroll metrics after the scroll action (x, y, scrollWidth, scrollHeight, clientWidth, clientHeight)
+- `canScrollX` (boolean): Whether horizontal scrolling is possible
+- `canScrollY` (boolean): Whether vertical scrolling is possible
+- `maxScrollX` (number): Maximum horizontal scrollLeft
+- `maxScrollY` (number): Maximum vertical scrollTop
+- `isAtLeft` (boolean): Whether the scroll position is at the far left
+- `isAtRight` (boolean): Whether the scroll position is at the far right
+- `isAtTop` (boolean): Whether the scroll position is at the very top
+- `isAtBottom` (boolean): Whether the scroll position is at the very bottom
+
+**Usage:**
+- Reveal content below the fold
+- Jump to the top/bottom without knowing exact positions
+- Bring elements into view before clicking
+- Inspect lazy-loaded content that appears on scroll
 
 #### `interaction_evaluate`
 Executes JavaScript in the browser console.
