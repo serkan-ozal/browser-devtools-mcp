@@ -17,7 +17,7 @@ export interface SetTraceIdOutput extends ToolOutput {}
 
 export class SetTraceId implements Tool {
     name(): string {
-        return 'monitoring_set-trace-id';
+        return 'o11y_set-trace-id';
     }
 
     description(): string {

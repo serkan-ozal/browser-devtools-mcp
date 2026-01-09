@@ -42,11 +42,14 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 - **Go Back**: Navigate backward in history
 - **Go Forward**: Navigate forward in history
 
-### Monitoring Tools
+### Observability (O11Y) Tools
 - **Console Messages**: Capture and filter browser console logs with advanced filtering (level, search, timestamp, sequence number)
 - **HTTP Requests**: Monitor network traffic with detailed request/response data, filtering by resource type, status code, and more
 - **OpenTelemetry Tracing**: Automatic trace injection into web pages, UI trace collection (document load, fetch, XMLHttpRequest, user interactions), and trace context propagation for backend correlation
 - **Trace ID Management**: Get, set, and generate OpenTelemetry compatible trace IDs for distributed tracing across API calls
+
+### Synchronization Tools
+- **Wait for Network Idle**: Wait until the page reaches a network-idle condition based on in-flight request count, useful for SPA pages and before taking screenshots
 
 ### Accessibility (A11Y) Tools
 - **ARIA Snapshots**: Capture semantic structure and accessibility roles in YAML format
@@ -509,9 +512,9 @@ Navigates backward in browser history.
 #### `navigation_go-forward`
 Navigates forward in browser history.
 
-### Monitoring Tools
+### Observability (O11Y) Tools
 
-#### `monitoring_get-console-messages`
+#### `o11y_get-console-messages`
 Retrieves console messages/logs from the browser with advanced filtering.
 
 **Parameters:**
@@ -526,7 +529,7 @@ Retrieves console messages/logs from the browser with advanced filtering.
 **Returns:**
 - `messages` (array): Array of console messages with type, text, location, timestamp, and sequence number
 
-#### `monitoring_get-http-requests`
+#### `o11y_get-http-requests`
 Retrieves HTTP requests from the browser with detailed filtering.
 
 **Parameters:**
@@ -544,7 +547,7 @@ Retrieves HTTP requests from the browser with detailed filtering.
 **Returns:**
 - `requests` (array): Array of HTTP requests with URL, method, headers, body, response, timing, and metadata
 
-#### `monitoring_get-trace-id`
+#### `o11y_get-trace-id`
 Gets the OpenTelemetry compatible trace id of the current session.
 
 **Parameters:**
@@ -555,7 +558,7 @@ Gets the OpenTelemetry compatible trace id of the current session.
 
 **Note:** Requires OpenTelemetry to be enabled (`OTEL_ENABLE=true`).
 
-#### `monitoring_new-trace-id`
+#### `o11y_new-trace-id`
 Generates a new OpenTelemetry compatible trace id and sets it to the current session.
 
 **Parameters:**
@@ -566,7 +569,7 @@ Generates a new OpenTelemetry compatible trace id and sets it to the current ses
 
 **Note:** Requires OpenTelemetry to be enabled (`OTEL_ENABLE=true`). The new trace ID is automatically set and will be used for all subsequent traces in the session.
 
-#### `monitoring_set-trace-id`
+#### `o11y_set-trace-id`
 Sets the OpenTelemetry compatible trace id of the current session.
 
 **Parameters:**
@@ -576,6 +579,33 @@ Sets the OpenTelemetry compatible trace id of the current session.
 - No return value
 
 **Note:** Requires OpenTelemetry to be enabled (`OTEL_ENABLE=true`). When a trace ID is set, it will be propagated in HTTP headers (traceparent) for all API calls, enabling correlation with backend traces.
+
+### Synchronization Tools
+
+#### `sync_wait-for-network-idle`
+Waits until the page reaches a network-idle condition based on the session's tracked in-flight request count.
+
+**Parameters:**
+- `timeoutMs` (number, optional): Maximum time to wait before failing (milliseconds, default: 30000)
+- `idleTimeMs` (number, optional): How long the network must stay idle continuously before resolving (milliseconds, default: 500)
+- `maxConnections` (number, optional): Idle threshold - network is considered idle when in-flight requests <= maxConnections (default: 0)
+- `pollIntervalMs` (number, optional): Polling interval used to sample the in-flight request count (milliseconds, default: 50)
+
+**Returns:**
+- `waitedMs` (number): Total time waited until the network became idle or the tool timed out
+- `idleTimeMs` (number): Idle duration required for success
+- `timeoutMs` (number): Maximum allowed wait time
+- `maxConnections` (number): Idle threshold used
+- `pollIntervalMs` (number): Polling interval used
+- `finalInFlightRequests` (number): The last observed number of in-flight requests
+- `observedIdleMs` (number): How long the in-flight request count stayed <= maxConnections
+
+**Usage:**
+- Use before interacting with SPA pages that load data asynchronously
+- Use before taking screenshots or AX tree snapshots for more stable results
+- Use after actions that trigger background fetch/XHR activity
+
+**Note:** This tool uses server-side tracking, so it works reliably even with strict CSP. It does NOT rely on window globals or page-injected counters.
 
 ### Accessibility (A11Y) Tools
 
@@ -749,13 +779,14 @@ This server enables AI assistants to:
 ### Example Workflow
 
 1. Navigate to a web page using `navigation_go-to`
-2. Take a screenshot with `content_take-screenshot` to see the current state
-3. Check console messages with `monitoring_get-console-messages` for errors
-4. Monitor HTTP requests with `monitoring_get-http-requests` to see API calls
-5. Capture accessibility snapshots with `a11y_take-aria-snapshot` and `accessibility_take-ax-tree-snapshot` to understand page structure
-6. Interact with elements using `interaction_click`, `interaction_fill`, etc.
-7. Extract content using `content_get-as-html` or `content_get-as-text`
-8. Save the page as PDF using `content_save-as-pdf` for documentation
+2. Wait for network idle with `sync_wait-for-network-idle` if needed (for SPA pages)
+3. Take a screenshot with `content_take-screenshot` to see the current state
+4. Check console messages with `o11y_get-console-messages` for errors
+5. Monitor HTTP requests with `o11y_get-http-requests` to see API calls
+6. Capture accessibility snapshots with `a11y_take-aria-snapshot` and `accessibility_take-ax-tree-snapshot` to understand page structure
+7. Interact with elements using `interaction_click`, `interaction_fill`, etc.
+8. Extract content using `content_get-as-html` or `content_get-as-text`
+9. Save the page as PDF using `content_save-as-pdf` for documentation
 
 ## Contributing
 

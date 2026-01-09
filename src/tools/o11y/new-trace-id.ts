@@ -18,7 +18,7 @@ export interface NewTraceIdOutput extends ToolOutput {
 
 export class NewTraceId implements Tool {
     name(): string {
-        return 'monitoring_new-trace-id';
+        return 'o11y_new-trace-id';
     }
 
     description(): string {
