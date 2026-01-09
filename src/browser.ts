@@ -8,16 +8,9 @@ import {
 
 import fs from 'fs';
 
-import type {
-    Browser,
-    BrowserContext,
-    ElementHandle,
-    Locator,
-    Page,
-} from 'playwright';
+import type { Browser, BrowserContext, Locator, Page } from 'playwright';
 import { chromium, firefox, webkit } from 'playwright';
 import { LaunchOptions } from 'playwright-core';
-import path from 'path';
 
 export enum BrowserType {
     CHROMIUM = 'chromium',
@@ -43,7 +36,6 @@ export type BrowserContextOptions = {
 
 export type BrowserContextInfo = {
     browserContext: BrowserContext;
-    shared: boolean;
 };
 
 export type PageOptions = {};
@@ -122,7 +114,8 @@ async function _getBrowser(browserOptions: BrowserOptions): Promise<Browser> {
 function _persistentBrowserContextKey(
     browserContextOptions: BrowserContextOptions
 ): string {
-    return JSON.stringify(browserContextOptions);
+    // There can be one active persistent browser context in a user data directory
+    return browserContextOptions.persistent!.userDataDir;
 }
 
 function _persistentBrowserContextLaunchOptions(
@@ -212,6 +205,11 @@ async function _getPersistentBrowserContext(
             persistentBrowserContextKey,
             browserContext
         );
+    } else {
+        // There can be one active persistent browser context in a user data directory
+        throw new Error(
+            `There is already active persistent browser context in the user data directory: ${browserContextOptions.persistent?.userDataDir}`
+        );
     }
     return browserContext;
 }
@@ -238,7 +236,6 @@ export async function newBrowserContext(
             await _getPersistentBrowserContext(browserContextOptions);
         return {
             browserContext,
-            shared: true,
         };
     } else {
         const browser: Browser = await _getBrowser(
@@ -249,7 +246,6 @@ export async function newBrowserContext(
         });
         return {
             browserContext,
-            shared: false,
         };
     }
 }
@@ -260,6 +256,21 @@ export async function newPage(
 ): Promise<Page> {
     // TODO Design page options and take care of it here for the newly created page
     return await browserContext.newPage();
+}
+
+export async function closeBrowserContext(
+    browserContext: BrowserContext
+): Promise<boolean> {
+    await browserContext.close();
+
+    let deleted: boolean = false;
+    for (const [key, val] of persistenceBrowserContexts.entries()) {
+        if (browserContext === val) {
+            persistenceBrowserContexts.delete(key);
+            deleted = true;
+        }
+    }
+    return deleted;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

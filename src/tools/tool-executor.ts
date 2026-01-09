@@ -25,7 +25,6 @@ export class ToolExecutor {
             browserContextInfo.browserContext,
             page,
             {
-                closeBrowserContextOnClose: !browserContextInfo.shared,
                 otelEnable: OTEL_ENABLE,
             }
         );

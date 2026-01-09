@@ -1,3 +1,4 @@
+import { closeBrowserContext } from './browser';
 import {
     CONSOLE_MESSAGES_BUFFER_SIZE,
     HTTP_REQUESTS_BUFFER_SIZE,
@@ -24,7 +25,6 @@ import {
 } from 'playwright';
 
 export type McpSessionContextOptions = {
-    closeBrowserContextOnClose: boolean;
     otelEnable: boolean;
 };
 
@@ -304,30 +304,16 @@ export class McpSessionContext {
 
         // Page(s) owned by browser context are already closed by the browser context itself
 
-        if (this.options.closeBrowserContextOnClose) {
-            try {
-                logger.debug(
-                    `Closing browser context of the MCP session with id ${this._sessionId} ...`
-                );
-                await this.browserContext.close();
-            } catch (err: any) {
-                logger.debug(
-                    `Error occurred while closing browser context of the MCP session with id ${this._sessionId} ...`,
-                    err
-                );
-            }
-        } else {
-            try {
-                logger.debug(
-                    `Closing page of the MCP session with id ${this._sessionId} ...`
-                );
-                await this.page.close();
-            } catch (err: any) {
-                logger.debug(
-                    `Error occurred while closing page of the MCP session with id ${this._sessionId} ...`,
-                    err
-                );
-            }
+        try {
+            logger.debug(
+                `Closing browser context of the MCP session with id ${this._sessionId} ...`
+            );
+            await closeBrowserContext(this.browserContext);
+        } catch (err: any) {
+            logger.debug(
+                `Error occurred while closing browser context of the MCP session with id ${this._sessionId} ...`,
+                err
+            );
         }
 
         this.consoleMessages.length = 0;
