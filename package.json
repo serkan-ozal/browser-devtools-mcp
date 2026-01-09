@@ -28,7 +28,8 @@
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "tsc",
+    "build:otel": "node scripts/build-otel.mjs",
+    "build": "tsc && npm run build:otel",
     "start": "ts-node ./src/index.ts",
     "start:http": "ts-node ./src/index.ts --transport=streamable-http",
     "watch": "tsc --watch",
@@ -48,9 +49,13 @@
     "LICENSE"
   ],
   "devDependencies": {
+    "@opentelemetry/auto-instrumentations-web": "^0.54.0",
+    "@opentelemetry/context-zone": "^2.2.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.208.0",
     "@types/node": "^18.19.87",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
+    "esbuild": "^0.27.2",
     "eslint": "^9.26.0",
     "eslint-plugin-import": "^2.31.0",
     "prettier": "^3.5.3",

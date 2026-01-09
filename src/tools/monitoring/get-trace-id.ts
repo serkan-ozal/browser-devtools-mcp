@@ -44,7 +44,7 @@ export class GetTraceId implements Tool {
         args: GetTraceIdInput
     ): Promise<GetTraceIdOutput> {
         return {
-            traceId: context.getTraceId(),
+            traceId: await context.getTraceId(),
         };
     }
 }

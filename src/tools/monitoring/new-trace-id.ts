@@ -45,7 +45,7 @@ export class NewTraceId implements Tool {
     ): Promise<NewTraceIdOutput> {
         const traceId: string = newTraceId();
 
-        context.setTraceId(traceId);
+        await context.setTraceId(traceId);
 
         return {
             traceId,

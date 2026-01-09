@@ -16,6 +16,7 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 - **DOM & Code-Level Debugging**: Element inspection, computed styles, accessibility data
 - **Browser Automation**: Navigation, input, clicking, scrolling, viewport control
 - **Execution Monitoring**: Console message capture, HTTP request/response tracking
+- **OpenTelemetry Integration**: Automatic trace injection into web pages, UI trace collection, and backend trace correlation via trace context propagation
 - **JavaScript Evaluation**: Execute code in page context
 - **Session Management**: Long-lived, session-based debugging with automatic cleanup
 - **Multiple Transport Modes**: Supports both stdio and HTTP transports
@@ -44,7 +45,8 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 ### Monitoring Tools
 - **Console Messages**: Capture and filter browser console logs with advanced filtering (level, search, timestamp, sequence number)
 - **HTTP Requests**: Monitor network traffic with detailed request/response data, filtering by resource type, status code, and more
-- **Trace ID Management**: Get and set OpenTelemetry compatible trace IDs for distributed tracing across API calls
+- **OpenTelemetry Tracing**: Automatic trace injection into web pages, UI trace collection (document load, fetch, XMLHttpRequest, user interactions), and trace context propagation for backend correlation
+- **Trace ID Management**: Get, set, and generate OpenTelemetry compatible trace IDs for distributed tracing across API calls
 
 ### Accessibility (A11Y) Tools
 - **ARIA Snapshots**: Capture semantic structure and accessibility roles in YAML format
@@ -364,7 +366,19 @@ The server can be configured using environment variables:
 | `SESSION_CLOSE_ON_SOCKET_CLOSE` | Close session when socket closes | `false` |
 | `CONSOLE_MESSAGES_BUFFER_SIZE` | Maximum console messages to buffer | `1000` |
 | `HTTP_REQUESTS_BUFFER_SIZE` | Maximum HTTP requests to buffer | `1000` |
+| `BROWSER_HEADLESS_ENABLE` | Run browser in headless mode | `true` |
+| `BROWSER_PERSISTENT_ENABLE` | Use persistent browser context (preserves cookies, localStorage, etc.) | `false` |
+| `BROWSER_PERSISTENT_USER_DATA_DIR` | Directory for persistent browser context user data | `./browser-devtools-mcp` |
+| `BROWSER_USE_INSTALLED_ON_SYSTEM` | Use system-installed Chrome browser instead of Playwright's bundled browser | `false` |
 | `BROWSER_EXECUTABLE_PATH` | Custom browser executable path | (uses Playwright default) |
+| `OTEL_ENABLE` | Enable OpenTelemetry integration | `false` |
+| `OTEL_SERVICE_NAME` | OpenTelemetry service name | `frontend` |
+| `OTEL_SERVICE_VERSION` | OpenTelemetry service version | (none) |
+| `OTEL_ASSETS_DIR` | Directory containing OpenTelemetry bundle files | (uses default) |
+| `OTEL_EXPORTER_TYPE` | OpenTelemetry exporter type: "otlp/http", "console", or "none" | `none` |
+| `OTEL_EXPORTER_HTTP_URL` | OpenTelemetry collector base URL (e.g., "http://localhost:4318") | (none) |
+| `OTEL_EXPORTER_HTTP_HEADERS` | OpenTelemetry exporter HTTP headers (comma-separated key=value pairs) | (none) |
+| `OTEL_INSTRUMENTATION_USER_INTERACTION_EVENTS` | User interaction events to instrument (comma-separated, e.g., "click,submit") | `click` |
 
 ## Available Tools
 
@@ -539,6 +553,8 @@ Gets the OpenTelemetry compatible trace id of the current session.
 **Returns:**
 - `traceId` (string, optional): The OpenTelemetry compatible trace id of the current session if available
 
+**Note:** Requires OpenTelemetry to be enabled (`OTEL_ENABLE=true`).
+
 #### `monitoring_new-trace-id`
 Generates a new OpenTelemetry compatible trace id and sets it to the current session.
 
@@ -548,6 +564,8 @@ Generates a new OpenTelemetry compatible trace id and sets it to the current ses
 **Returns:**
 - `traceId` (string): The generated new OpenTelemetry compatible trace id
 
+**Note:** Requires OpenTelemetry to be enabled (`OTEL_ENABLE=true`). The new trace ID is automatically set and will be used for all subsequent traces in the session.
+
 #### `monitoring_set-trace-id`
 Sets the OpenTelemetry compatible trace id of the current session.
 
@@ -556,6 +574,8 @@ Sets the OpenTelemetry compatible trace id of the current session.
 
 **Returns:**
 - No return value
+
+**Note:** Requires OpenTelemetry to be enabled (`OTEL_ENABLE=true`). When a trace ID is set, it will be propagated in HTTP headers (traceparent) for all API calls, enabling correlation with backend traces.
 
 ### Accessibility (A11Y) Tools
 
@@ -625,7 +645,24 @@ The server supports multiple browser engines:
 - **Firefox**
 - **WebKit**
 
-Browser instances are shared across sessions for efficiency, but each session has its own isolated browser context.
+**Browser Configuration:**
+- **Headless Mode**: By default, browsers run in headless mode (`BROWSER_HEADLESS_ENABLE=true`). Set to `false` to see the browser window.
+- **Persistent Context**: When enabled (`BROWSER_PERSISTENT_ENABLE=true`), browser contexts persist across sessions, preserving:
+  - Cookies and session data
+  - LocalStorage and IndexedDB
+  - Browser extensions and settings
+  - User preferences
+  
+  Persistent contexts are shared across sessions and are not automatically closed when sessions end.
+  
+- **System Browser**: When enabled (`BROWSER_USE_INSTALLED_ON_SYSTEM=true`), the server uses the system-installed Chrome browser instead of Playwright's bundled browser. This is useful for:
+  - Testing with the exact browser version users have
+  - Using browser extensions installed on the system
+  - Better compatibility with certain web applications
+  
+  **Note:** System browser support is currently only available for Chromium/Chrome.
+
+Browser instances are shared across sessions for efficiency. Each session gets its own isolated browser context, unless persistent context is enabled (in which case contexts are shared).
 
 ### Buffering & Filtering
 
@@ -636,6 +673,31 @@ Console messages and HTTP requests are buffered in memory with configurable buff
 - **Time-based filtering**: Filter by timestamp
 - **Incremental retrieval**: Use sequence numbers to fetch only new items
 - **Pagination**: Limit results with start/end trimming
+
+### OpenTelemetry Integration
+
+When enabled (`OTEL_ENABLE=true`), the server automatically injects OpenTelemetry instrumentation into all web pages navigated by the browser. This enables:
+
+- **Automatic Trace Collection**: UI traces are automatically collected for:
+  - Document load events
+  - Fetch/XHR requests
+  - User interactions (clicks, form submissions, etc.)
+  
+- **Trace Context Propagation**: Trace IDs are automatically propagated in HTTP headers (traceparent) for all API calls, enabling:
+  - Correlation between frontend and backend traces
+  - End-to-end distributed tracing across the entire application stack
+  
+- **Trace ID Management**: Tools allow you to:
+  - Get the current session's trace ID
+  - Generate new trace IDs
+  - Set custom trace IDs (e.g., from backend trace context)
+  
+- **Exporter Configuration**: Traces can be exported to:
+  - **OTLP/HTTP**: Send to OpenTelemetry collector (configure via `OTEL_EXPORTER_HTTP_URL`)
+  - **Console**: Log traces to browser console (for debugging)
+  - **None**: Collect traces but don't export (for testing)
+
+The OpenTelemetry integration uses a proxy mechanism (`/__mcp_otel/`) to forward traces from the browser to the configured collector, ensuring proper CORS handling and trace context propagation.
 
 ## Development
 
@@ -677,11 +739,12 @@ This server enables AI assistants to:
 
 1. **Debug Web Applications**: Capture screenshots, inspect DOM, check console errors
 2. **Monitor Network Activity**: Track API calls, analyze request/response patterns
-3. **Test User Flows**: Automate navigation and interactions
-4. **Visual Verification**: Compare visual states, verify UI changes
-5. **Content Extraction**: Get HTML/text content with filtering and cleaning options
-6. **Accessibility Analysis**: Use ARIA and AX tree snapshots to understand page structure and detect UI issues
-7. **Performance Analysis**: Monitor HTTP request timing and failures
+3. **Distributed Tracing**: Enable OpenTelemetry to correlate frontend and backend traces for end-to-end debugging
+4. **Test User Flows**: Automate navigation and interactions
+5. **Visual Verification**: Compare visual states, verify UI changes
+6. **Content Extraction**: Get HTML/text content with filtering and cleaning options
+7. **Accessibility Analysis**: Use ARIA and AX tree snapshots to understand page structure and detect UI issues
+8. **Performance Analysis**: Monitor HTTP request timing and failures
 
 ### Example Workflow
 
