@@ -40,6 +40,10 @@ export type BrowserContextInfo = {
 
 export type PageOptions = {};
 
+type LaunchPersistentContextOptions = Parameters<
+    typeof chromium.launchPersistentContext
+>[1];
+
 const browsers: Map<string, Browser> = new Map();
 const persistenceBrowserContexts: Map<string, BrowserContext> = new Map();
 
@@ -122,16 +126,17 @@ function _persistentBrowserContextLaunchOptions(
     browserContextOptions: BrowserContextOptions
 ) {
     const browserOptions: BrowserOptions = browserContextOptions.browserOptions;
-    const launchOptions = {
+    const launchOptions: LaunchPersistentContextOptions = {
         headless: browserOptions.headless,
         executablePath: browserOptions.executablePath,
         bypassCSP: true,
+        viewport: browserOptions.headless ? undefined : null,
     };
     if (browserOptions.useInstalledOnSystem) {
         switch (browserOptions.browserType) {
             case BrowserType.CHROMIUM:
-                (launchOptions as any).channel = 'chrome';
-                (launchOptions as any).args = [
+                launchOptions.channel = 'chrome';
+                launchOptions.args = [
                     '--disable-blink-features=AutomationControlled',
                 ];
                 break;
@@ -242,6 +247,9 @@ export async function newBrowserContext(
             browserContextOptions.browserOptions
         );
         const browserContext: BrowserContext = await browser.newContext({
+            viewport: browserContextOptions.browserOptions.headless
+                ? undefined
+                : null,
             bypassCSP: true,
         });
         return {
