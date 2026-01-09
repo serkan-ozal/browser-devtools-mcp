@@ -5,6 +5,8 @@ import { Evaluate } from './evaluate';
 import { Fill } from './fill';
 import { Hover } from './hover';
 import { PressKey } from './press-key';
+import { ResizeViewport } from './resize-viewport';
+import { ResizeWindow } from './resize-window';
 import { Select } from './select';
 import { Scroll } from './scroll';
 
@@ -15,6 +17,8 @@ export const tools: Tool[] = [
     new Fill(),
     new Hover(),
     new PressKey(),
+    new ResizeViewport(),
+    new ResizeWindow(),
     new Select(),
     new Scroll(),
 ];

@@ -36,6 +36,8 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 - **Select**: Select dropdown options
 - **Drag**: Drag and drop operations
 - **Scroll**: Scroll the page viewport or specific scrollable elements with multiple modes (by, to, top, bottom, left, right)
+- **Resize Viewport**: Resize the page viewport using Playwright viewport emulation
+- **Resize Window**: Resize the real browser window (OS-level) using Chrome DevTools Protocol
 - **Evaluate**: Execute JavaScript in page context
 
 ### Navigation Tools
@@ -514,6 +516,46 @@ Scrolls the page viewport or a specific scrollable element.
 - Jump to the top/bottom without knowing exact positions
 - Bring elements into view before clicking
 - Inspect lazy-loaded content that appears on scroll
+
+#### `interaction_resize-viewport`
+Resizes the page viewport using Playwright viewport emulation.
+
+**Parameters:**
+- `width` (number, required): Target viewport width in CSS pixels (minimum: 200)
+- `height` (number, required): Target viewport height in CSS pixels (minimum: 200)
+
+**Returns:**
+- `requested` (object): Requested viewport configuration (width, height)
+- `viewport` (object): Viewport metrics observed inside the page after resizing:
+  - `innerWidth`, `innerHeight`: window.innerWidth/innerHeight
+  - `outerWidth`, `outerHeight`: window.outerWidth/outerHeight
+  - `devicePixelRatio`: window.devicePixelRatio
+
+**Notes:**
+- This affects `window.innerWidth/innerHeight`, CSS media queries, layout, rendering, and screenshots
+- This does NOT resize the OS-level browser window
+- Runtime switching to viewport=null (binding to real window size) is not supported by Playwright
+- If you need real window-driven responsive behavior, start the BrowserContext with viewport: null and use the window resize tool instead
+
+#### `interaction_resize-window`
+Resizes the real browser window (OS-level window) for the current page using Chrome DevTools Protocol (CDP).
+
+**Parameters:**
+- `width` (number, optional): Target window width in pixels (required when state="normal", minimum: 200)
+- `height` (number, optional): Target window height in pixels (required when state="normal", minimum: 200)
+- `state` (enum, optional): Target window state - "normal", "maximized", "minimized", or "fullscreen" (default: "normal")
+
+**Returns:**
+- `requested` (object): Requested window change parameters (width, height, state)
+- `before` (object): Window bounds before resizing (windowId, state, left, top, width, height)
+- `after` (object): Window bounds after resizing (windowId, state, left, top, width, height)
+- `viewport` (object): Page viewport metrics after resizing (innerWidth, innerHeight, outerWidth, outerHeight, devicePixelRatio)
+
+**Notes:**
+- Works best on Chromium-based browsers (Chromium/Chrome/Edge)
+- Especially useful in headful sessions when running with viewport emulation disabled (viewport: null)
+- If Playwright viewport emulation is enabled (viewport is NOT null), resizing the OS window may not change page layout
+- On non-Chromium browsers (Firefox/WebKit), CDP is not available and this tool will fail
 
 #### `interaction_evaluate`
 Executes JavaScript in the browser console.
