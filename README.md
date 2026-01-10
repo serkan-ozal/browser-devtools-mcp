@@ -59,6 +59,12 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 - **ARIA Snapshots**: Capture semantic structure and accessibility roles in YAML format
 - **AX Tree Snapshots**: Combine Chromium's Accessibility tree with runtime visual diagnostics (bounding boxes, visibility, occlusion detection, computed styles)
 
+### Stub Tools
+- **Intercept HTTP Request**: Intercept and modify outgoing HTTP requests (headers, body, method) using glob patterns
+- **Mock HTTP Response**: Mock HTTP responses (fulfill with custom status/headers/body or abort) with configurable delay, times limit, and probability (flaky testing)
+- **List Stubs**: List all currently installed stubs for the active browser context
+- **Clear Stubs**: Remove one or all installed stubs
+
 ## Prerequisites
 
 - Node.js 18+
@@ -808,6 +814,118 @@ The server can be configured using environment variables:
 - Identify wrong layout/geometry, styling issues, and overlap/stacking/occlusion problems
 - ALWAYS use `checkOcclusion: true` when investigating UI/layout problems
 - Use alongside `a11y_take-aria-snapshot` tool for complete UI analysis
+</details>
+
+### Stub Tools
+
+<details>
+<summary><code>stub_intercept-http-request</code> - Installs a request interceptor stub that can modify outgoing requests before they are sent.</summary>
+
+**Parameters:**
+- `pattern` (string, required): Glob pattern matched against the full request URL (picomatch)
+- `modifications` (object, optional): Request modifications to apply
+  - `headers` (object, optional): Headers to merge into the outgoing request headers
+  - `body` (string | object, optional): Override request body. If object/array, it will be JSON-stringified
+  - `method` (string, optional): Override HTTP method (e.g., POST, PUT)
+- `delayMs` (number, optional): Artificial delay in milliseconds before continuing the request (default: 0)
+- `times` (number, optional): Apply only N times, then let through. Omit for infinite
+
+**Returns:**
+- `stubId` (string): Unique id of the installed stub
+- `kind` (string): Stub kind (always "intercept_http_request")
+- `pattern` (string): Glob pattern used
+- `enabled` (boolean): Whether the stub is enabled
+- `delayMs` (number): Applied artificial delay in milliseconds
+- `times` (number): Max applications (-1 means infinite)
+
+**Use cases:**
+- A/B testing / feature flags (inject headers)
+- Security testing (inject malformed headers / payload)
+- Edge cases (special characters, large payload)
+- Auth simulation (add API keys / tokens in headers)
+
+**Notes:**
+- Pattern is a glob matched against the full request URL (picomatch)
+- This modifies requests; it does not change responses
+- Times limits how many times the interceptor applies (-1 means infinite)
+</details>
+
+<details>
+<summary><code>stub_mock-http-response</code> - Installs a response stub for matching requests using glob patterns (picomatch).</summary>
+
+**Parameters:**
+- `pattern` (string, required): Glob pattern matched against the full request URL (picomatch)
+- `response` (object, required): Mock response configuration
+  - `action` (enum, optional): "fulfill" or "abort" (default: "fulfill")
+  - `status` (number, optional): HTTP status code (used when action="fulfill", range: 100-599)
+  - `headers` (object, optional): HTTP headers for the mocked response
+  - `body` (string | object, optional): Response body. If object/array, it will be JSON-stringified
+  - `abortErrorCode` (string, optional): Playwright abort error code (used when action="abort"), e.g., "timedout"
+- `delayMs` (number, optional): Artificial delay in milliseconds before applying the stub (default: 0)
+- `times` (number, optional): Apply only N times, then let through. Omit for infinite
+- `chance` (number, optional): Probability (0..1) to apply the stub per request (flaky testing)
+
+**Returns:**
+- `stubId` (string): Unique id of the installed stub (use it to clear later)
+- `kind` (string): Stub kind (always "mock_http_response")
+- `pattern` (string): Glob pattern used
+- `enabled` (boolean): Whether the stub is enabled
+- `delayMs` (number): Applied artificial delay in milliseconds
+- `times` (number): Max applications (-1 means infinite)
+- `chance` (number, optional): Apply probability (omit means always)
+- `action` (string): Applied action ("fulfill" or "abort")
+- `status` (number, optional): HTTP status (present when action="fulfill")
+
+**Use cases:**
+- Offline testing (return 200 with local JSON)
+- Error scenarios (force 500/404 or abort with timedout)
+- Edge cases (empty data / huge payload / special characters)
+- Flaky API testing (chance < 1.0)
+- Performance testing (delayMs)
+
+**Notes:**
+- Pattern is a glob matched against the full request URL
+- Stubs are evaluated in insertion order; first match wins
+- Times limits how many times the stub applies (-1 means infinite)
+</details>
+
+<details>
+<summary><code>stub_list</code> - Lists currently installed stubs for the active browser context/session.</summary>
+
+**Parameters:**
+- No input parameters
+
+**Returns:**
+- `stubs` (array): Array of installed stubs, each containing:
+  - `id` (string): Stub id
+  - `kind` (string): Stub kind ("intercept_http_request" or "mock_http_response")
+  - `enabled` (boolean): Whether stub is enabled
+  - `pattern` (string): Glob pattern (picomatch)
+  - `delayMs` (number): Artificial delay in ms
+  - `times` (number): Max applications (-1 means infinite)
+  - `usedCount` (number): How many times it has been applied
+  - `action` (string, optional): For mock_response: "fulfill" or "abort"
+  - `status` (number, optional): For mock_response: HTTP status (if set)
+
+**Usage:**
+- Useful to debug why certain calls are being mocked/intercepted
+- Check stub status and usage statistics
+- Verify stub configuration before debugging issues
+</details>
+
+<details>
+<summary><code>stub_clear</code> - Clears stubs installed.</summary>
+
+**Parameters:**
+- `stubId` (string, optional): Stub id to remove. Omit to remove all stubs
+
+**Returns:**
+- `clearedCount` (number): Number of stubs removed
+
+**Usage:**
+- Remove specific stub by ID when no longer needed
+- Clear all stubs to reset the browser context
+- Useful after testing or debugging sessions
 </details>
 
 ## Architecture

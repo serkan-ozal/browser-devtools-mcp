@@ -4,7 +4,7 @@ import path from 'path';
 import * as logger from '../logger';
 import { OTELProxy } from './otel-proxy';
 
-import type { BrowserContext, Page, Frame } from 'playwright';
+import type { BrowserContext, Frame, Page, Request } from 'playwright';
 import {
     OTEL_ASSETS_DIR,
     OTEL_EXPORTER_HTTP_HEADERS,
@@ -337,6 +337,11 @@ export class OTELController {
         logger.debug(
             '[otel-controller] init installed: bundle + config init scripts + auto-sync'
         );
+    }
+
+    isOTELRequest(request: Request): boolean {
+        const path: string = new URL(request.url()).pathname;
+        return path.startsWith(OTEL_PROXY_LOCAL_PATH);
     }
 
     async isInitialized(page: Page): Promise<boolean> {

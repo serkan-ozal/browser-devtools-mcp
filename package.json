@@ -53,6 +53,7 @@
     "@opentelemetry/context-zone": "^2.2.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.208.0",
     "@types/node": "^18.19.87",
+    "@types/picomatch": "^4.0.2",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
     "esbuild": "^0.27.2",
@@ -73,6 +74,7 @@
     "@playwright/browser-webkit": "^1.57.0",
     "commander": "^14.0.1",
     "hono": "^4.9.9",
+    "picomatch": "^4.0.3",
     "playwright": "^1.57.0"
   }
 }
