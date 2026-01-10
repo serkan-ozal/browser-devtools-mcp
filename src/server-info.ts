@@ -9,14 +9,40 @@ It supports both visual understanding and code-level inspection of browser state
 similar to existing Playwright and Chrome DevTools–based MCP servers, with a focus on AI-driven exploration, diagnosis, and action.
 
 Core capabilities include:
-- Visual inspection of pages, layout, geometry, visibility, stacking, and styles
-- DOM and code-level debugging, including attributes, computed styles, and accessibility data
-- Correlation between rendered visuals and underlying DOM / accessibility structure
-- JavaScript evaluation in page context for advanced diagnostics
-- Browser control and automation (navigation, input, scrolling, viewport control)
-- Long-lived, session-based debugging backed by real Playwright browser instances
-- Streamable responses and server-initiated notifications for interactive analysis
-- Clean lifecycle management and teardown on connection close
+
+**Content & Visual Inspection:**
+- Screenshots (full page or specific elements)
+- HTML and text content extraction with filtering options
+- PDF generation with customizable formats
+- Accessibility snapshots (ARIA and AX tree) with visual diagnostics
+- Viewport and window resizing for responsive testing
+
+**Browser Control & Interaction:**
+- Navigation (go to URL, back, forward)
+- Element interaction (click, fill, hover, select, drag)
+- Keyboard simulation (press-key)
+- Scrolling (viewport or container-based with multiple modes)
+- Viewport emulation and real window resizing
+- JavaScript evaluation in page context
+
+**Observability & Monitoring:**
+- Console message capture with filtering
+- HTTP request/response monitoring with detailed filtering
+- Web Vitals performance metrics (LCP, INP, CLS, TTFB, FCP) with recommendations
+- OpenTelemetry trace ID management for distributed tracing correlation
+
+**Synchronization:**
+- Network idle waiting for async operations
+- Configurable timeouts and polling intervals
+
+**Advanced Features:**
+- OpenTelemetry integration: Automatic UI trace collection and backend trace correlation
+- Session-based architecture with long-lived browser contexts
+- Persistent browser contexts for stateful sessions
+- Headless and headful mode support
+- System-installed browser usage option
+- Streamable responses and server-initiated notifications
+- Clean lifecycle management and teardown
 
 UI debugging guidance for AI agents:
 - Prefer Accessibility (AX) and ARIA snapshots over raw DOM dumps when diagnosing UI problems.
@@ -28,6 +54,9 @@ UI debugging guidance for AI agents:
   In such cases, enable occlusion checking ("elementFromPoint") to identify which element is actually on top.
 - Use ARIA snapshots to reason about accessibility roles/states and to validate that the intended
   semantics (labels, roles, disabled state, focusability) match the visible UI.
+- Before taking screenshots or snapshots, wait for network idle to ensure page stability.
+- Use Web Vitals tool to assess performance and identify optimization opportunities.
+- For distributed tracing, set trace IDs before navigation to correlate frontend and backend traces.
 
 This server is designed for AI coding assistants, visual debugging agents, and automated analysis tools 
 that need to reason about what a page looks like, how it is structured, and how it behaves — all through a single MCP interface.
@@ -39,25 +68,50 @@ export const UI_DEBUGGING_POLICY: string = `
 <ui_debugging_policy>
 When asked to check for UI problems, layout issues, or visual bugs, ALWAYS follow this policy:
 
-1. **Visual Inspection**: Take screenshot for general aesthetics and layout overview
-2. **Accessibility Tree Analysis**: Call "a11y_take-ax-tree-snapshot" tool with "checkOcclusion:true"
+1. **Synchronization**: If the page loads content asynchronously, call "sync_wait-for-network-idle" first
+   to ensure the page is stable before inspection.
+
+2. **Visual Inspection**: Call "content_take-screenshot" for general aesthetics and layout overview.
+
+3. **Accessibility Tree Analysis**: Call "a11y_take-ax-tree-snapshot" tool with "checkOcclusion:true"
    - Provides precise bounding boxes, runtime visual data, and occlusion detection
    - Best for detecting overlaps and measuring exact positions
-3. **ARIA Snapshot**: Call "a11y_take-aria-snapshot" tool (full page or specific selector)
+   - Use "onlyVisible:true" or "onlyInViewport:true" to filter results
+   - Set "includeStyles:true" to analyze computed CSS properties
+
+4. **ARIA Snapshot**: Call "a11y_take-aria-snapshot" tool (full page or specific selector)
    - Provides semantic structure and accessibility roles
    - Best for understanding page hierarchy and accessibility issues
-4. **Manual Verification**: Calculate bounding box overlaps:
+   - Use in combination with AX tree snapshot for comprehensive analysis
+
+5. **Performance Check** (optional but recommended): Call "o11y_get-web-vitals" to assess page performance
+   - Identifies performance issues that may affect user experience
+   - Provides actionable recommendations based on Google's thresholds
+
+6. **Console & Network Inspection**: Check for errors and failed requests
+   - Call "o11y_get-console-messages" with "type:ERROR" to find JavaScript errors
+   - Call "o11y_get-http-requests" with "ok:false" to find failed network requests
+
+7. **Manual Verification**: Calculate bounding box overlaps:
    - Horizontal: (element1.x + element1.width) ≤ element2.x
    - Vertical: (element1.y + element1.height) ≤ element2.y
-5. **Report ALL findings**: aesthetic issues, overlaps, spacing problems, alignment issues, 
-   accessibility problems, semantic structure issues
 
-**Why both tools?**
-- AX tree: Technical measurements, occlusion, precise positioning
+8. **Report ALL findings**: aesthetic issues, overlaps, spacing problems, alignment issues, 
+   accessibility problems, semantic structure issues, performance problems, console errors, failed requests
+
+**Tool Usage Notes:**
+- AX tree: Technical measurements, occlusion, precise positioning, visual diagnostics
 - ARIA snapshot: Semantic understanding, accessibility structure, role hierarchy
+- Screenshot: Quick visual reference, but not sufficient alone
+- Network idle: Essential for SPAs and async content
+- Web Vitals: Performance context for UI issues
 
-Never assume "looks good visually" = "no problems". Overlaps and accessibility issues 
-can be functionally broken while appearing visually correct.
+**Important:**
+- Never assume "looks good visually" = "no problems". Overlaps and accessibility issues 
+  can be functionally broken while appearing visually correct.
+- Always check occlusion when interactions fail or elements appear misaligned.
+- Use scroll tool if elements are below the fold before inspection.
+- For responsive issues, use resize-viewport or resize-window tools to test different sizes.
 </ui_debugging_policy>
 `;
 
