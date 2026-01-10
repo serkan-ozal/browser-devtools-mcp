@@ -48,6 +48,7 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 ### Observability (O11Y) Tools
 - **Console Messages**: Capture and filter browser console logs with advanced filtering (level, search, timestamp, sequence number)
 - **HTTP Requests**: Monitor network traffic with detailed request/response data, filtering by resource type, status code, and more
+- **Web Vitals**: Collect Core Web Vitals (LCP, INP, CLS) and supporting metrics (TTFB, FCP) with ratings and recommendations based on Google's thresholds
 - **OpenTelemetry Tracing**: Automatic trace injection into web pages, UI trace collection (document load, fetch, XMLHttpRequest, user interactions), and trace context propagation for backend correlation
 - **Trace ID Management**: Get, set, and generate OpenTelemetry compatible trace IDs for distributed tracing across API calls
 
@@ -390,8 +391,8 @@ The server can be configured using environment variables:
 
 ### Content Tools
 
-#### `content_take-screenshot`
-Takes a screenshot of the current page or a specific element.
+<details>
+<summary><code>content_take-screenshot</code> - Takes a screenshot of the current page or a specific element.</summary>
 
 **Parameters:**
 - `outputPath` (string, optional): Directory path where screenshot will be saved (default: OS temp directory)
@@ -403,9 +404,10 @@ Takes a screenshot of the current page or a specific element.
 **Returns:**
 - `filePath` (string): Full path of the saved screenshot file
 - `image` (object): Screenshot image data with mimeType
+</details>
 
-#### `content_get-as-html`
-Retrieves the HTML content of the current page or a specific element.
+<details>
+<summary><code>content_get-as-html</code> - Retrieves the HTML content of the current page or a specific element.</summary>
 
 **Parameters:**
 - `selector` (string, optional): CSS selector to limit the HTML content to a specific container
@@ -419,9 +421,10 @@ Retrieves the HTML content of the current page or a specific element.
 
 **Returns:**
 - `output` (string): The requested HTML content of the page
+</details>
 
-#### `content_get-as-text`
-Retrieves the visible text content of the current page or a specific element.
+<details>
+<summary><code>content_get-as-text</code> - Retrieves the visible text content of the current page or a specific element.</summary>
 
 **Parameters:**
 - `selector` (string, optional): CSS selector to limit the text content to a specific container
@@ -429,9 +432,10 @@ Retrieves the visible text content of the current page or a specific element.
 
 **Returns:**
 - `output` (string): The requested text content of the page
+</details>
 
-#### `content_save-as-pdf`
-Saves the current page as a PDF document.
+<details>
+<summary><code>content_save-as-pdf</code> - Saves the current page as a PDF document.</summary>
 
 **Parameters:**
 - `outputPath` (string, optional): Directory path where PDF will be saved (default: OS temp directory)
@@ -442,50 +446,57 @@ Saves the current page as a PDF document.
 
 **Returns:**
 - `filePath` (string): Full path of the saved PDF file
+</details>
 
 ### Interaction Tools
 
-#### `interaction_click`
-Clicks an element on the page.
+<details>
+<summary><code>interaction_click</code> - Clicks an element on the page.</summary>
 
 **Parameters:**
 - `selector` (string, required): CSS selector for the element to click
+</details>
 
-#### `interaction_fill`
-Fills a form input field.
+<details>
+<summary><code>interaction_fill</code> - Fills a form input field.</summary>
 
 **Parameters:**
 - `selector` (string, required): CSS selector for the input field
 - `value` (string, required): Value to fill
+</details>
 
-#### `interaction_hover`
-Hovers over an element.
+<details>
+<summary><code>interaction_hover</code> - Hovers over an element.</summary>
 
 **Parameters:**
 - `selector` (string, required): CSS selector for the element to hover
+</details>
 
-#### `interaction_press-key`
-Simulates keyboard input.
+<details>
+<summary><code>interaction_press-key</code> - Simulates keyboard input.</summary>
 
 **Parameters:**
 - `key` (string, required): Key to press (e.g., "Enter", "Escape", "Tab")
+</details>
 
-#### `interaction_select`
-Selects an option from a dropdown.
+<details>
+<summary><code>interaction_select</code> - Selects an option from a dropdown.</summary>
 
 **Parameters:**
 - `selector` (string, required): CSS selector for the select element
 - `value` (string, required): Value to select
+</details>
 
-#### `interaction_drag`
-Performs drag and drop operation.
+<details>
+<summary><code>interaction_drag</code> - Performs drag and drop operation.</summary>
 
 **Parameters:**
 - `sourceSelector` (string, required): CSS selector for the source element
 - `targetSelector` (string, required): CSS selector for the target element
+</details>
 
-#### `interaction_scroll`
-Scrolls the page viewport or a specific scrollable element.
+<details>
+<summary><code>interaction_scroll</code> - Scrolls the page viewport or a specific scrollable element.</summary>
 
 **Parameters:**
 - `mode` (enum, optional): Scroll mode - "by" (relative delta), "to" (absolute position), "top", "bottom", "left", "right" (default: "by")
@@ -516,9 +527,10 @@ Scrolls the page viewport or a specific scrollable element.
 - Jump to the top/bottom without knowing exact positions
 - Bring elements into view before clicking
 - Inspect lazy-loaded content that appears on scroll
+</details>
 
-#### `interaction_resize-viewport`
-Resizes the page viewport using Playwright viewport emulation.
+<details>
+<summary><code>interaction_resize-viewport</code> - Resizes the page viewport using Playwright viewport emulation.</summary>
 
 **Parameters:**
 - `width` (number, required): Target viewport width in CSS pixels (minimum: 200)
@@ -536,9 +548,10 @@ Resizes the page viewport using Playwright viewport emulation.
 - This does NOT resize the OS-level browser window
 - Runtime switching to viewport=null (binding to real window size) is not supported by Playwright
 - If you need real window-driven responsive behavior, start the BrowserContext with viewport: null and use the window resize tool instead
+</details>
 
-#### `interaction_resize-window`
-Resizes the real browser window (OS-level window) for the current page using Chrome DevTools Protocol (CDP).
+<details>
+<summary><code>interaction_resize-window</code> - Resizes the real browser window (OS-level window) for the current page using Chrome DevTools Protocol (CDP).</summary>
 
 **Parameters:**
 - `width` (number, optional): Target window width in pixels (required when state="normal", minimum: 200)
@@ -556,20 +569,22 @@ Resizes the real browser window (OS-level window) for the current page using Chr
 - Especially useful in headful sessions when running with viewport emulation disabled (viewport: null)
 - If Playwright viewport emulation is enabled (viewport is NOT null), resizing the OS window may not change page layout
 - On non-Chromium browsers (Firefox/WebKit), CDP is not available and this tool will fail
+</details>
 
-#### `interaction_evaluate`
-Executes JavaScript in the browser console.
+<details>
+<summary><code>interaction_evaluate</code> - Executes JavaScript in the browser console.</summary>
 
 **Parameters:**
 - `script` (string, required): JavaScript code to execute
 
 **Returns:**
 - `result` (any): Result of the JavaScript evaluation
+</details>
 
 ### Navigation Tools
 
-#### `navigation_go-to`
-Navigates to a URL.
+<details>
+<summary><code>navigation_go-to</code> - Navigates to a URL.</summary>
 
 **Parameters:**
 - `url` (string, required): URL to navigate to (must include scheme)
@@ -581,17 +596,20 @@ Navigates to a URL.
 - `status` (number): HTTP status code
 - `statusText` (string): HTTP status text
 - `ok` (boolean): Whether navigation was successful (2xx status)
+</details>
 
-#### `navigation_go-back`
-Navigates backward in browser history.
+<details>
+<summary><code>navigation_go-back</code> - Navigates backward in browser history.</summary>
+</details>
 
-#### `navigation_go-forward`
-Navigates forward in browser history.
+<details>
+<summary><code>navigation_go-forward</code> - Navigates forward in browser history.</summary>
+</details>
 
 ### Observability (O11Y) Tools
 
-#### `o11y_get-console-messages`
-Retrieves console messages/logs from the browser with advanced filtering.
+<details>
+<summary><code>o11y_get-console-messages</code> - Retrieves console messages/logs from the browser with advanced filtering.</summary>
 
 **Parameters:**
 - `type` (enum, optional): Filter by message level - "ERROR", "WARNING", "INFO", "DEBUG"
@@ -604,9 +622,10 @@ Retrieves console messages/logs from the browser with advanced filtering.
 
 **Returns:**
 - `messages` (array): Array of console messages with type, text, location, timestamp, and sequence number
+</details>
 
-#### `o11y_get-http-requests`
-Retrieves HTTP requests from the browser with detailed filtering.
+<details>
+<summary><code>o11y_get-http-requests</code> - Retrieves HTTP requests from the browser with detailed filtering.</summary>
 
 **Parameters:**
 - `resourceType` (enum, optional): Filter by resource type (e.g., "document", "script", "stylesheet")
@@ -622,9 +641,60 @@ Retrieves HTTP requests from the browser with detailed filtering.
 
 **Returns:**
 - `requests` (array): Array of HTTP requests with URL, method, headers, body, response, timing, and metadata
+</details>
 
-#### `o11y_get-trace-id`
-Gets the OpenTelemetry compatible trace id of the current session.
+<details>
+<summary><code>o11y-get-web-vitals</code> - Collects Web Vitals-style performance metrics and provides recommendations based on Google's thresholds.</summary>
+
+**Parameters:**
+- `waitMs` (number, optional): Optional wait duration in milliseconds before reading metrics (default: 0, max: 30000). Useful to allow LCP/INP/CLS to settle after interactions
+- `includeDebug` (boolean, optional): If true, returns additional debug details such as entry counts and LCP element hint (default: false)
+
+**Returns:**
+- `url` (string): Current page URL
+- `title` (string): Current page title
+- `timestampMs` (number): Unix epoch timestamp (ms) when the metrics were captured
+- `metrics` (object): Raw metric values (null if unavailable):
+  - `lcpMs` (number | null): Largest Contentful Paint in milliseconds
+  - `inpMs` (number | null): Interaction to Next Paint in milliseconds (best-effort approximation)
+  - `cls` (number | null): Cumulative Layout Shift score
+  - `ttfbMs` (number | null): Time to First Byte in milliseconds
+  - `fcpMs` (number | null): First Contentful Paint in milliseconds
+- `ratings` (object): Ratings computed from Google thresholds for each metric:
+  - `lcp`, `inp`, `cls`, `ttfb`, `fcp`: Each contains:
+    - `rating` (enum): "good", "needs_improvement", "poor", or "not_available"
+    - `value` (number | null): Metric value
+    - `unit` (enum): "ms" or "score"
+    - `thresholds` (object): Thresholds used for rating (good, poor)
+- `recommendations` (object): Recommendations based on measured values:
+  - `coreWebVitalsPassed` (boolean): True if all Core Web Vitals are rated "good"
+  - `summary` (array): High-level summary and prioritization guidance
+  - `lcp`, `inp`, `cls`, `ttfb`, `fcp` (array): Specific recommendations for each metric
+  - `general` (array): General measurement and debugging notes
+- `notes` (array): Notes about metric availability, browser limitations, and interpretation
+- `debug` (object, optional): Optional debug details (when includeDebug=true):
+  - `waitMs` (number): Actual wait duration used
+  - `entries` (object): Counts of PerformanceEntry types used to compute metrics
+  - `lastLcpSelectorHint` (string | null): Best-effort selector hint for the last LCP element
+  - `lastLcpTagName` (string | null): Tag name of the last LCP element
+
+**Core Web Vitals Thresholds:**
+- **LCP** (Largest Contentful Paint): good <= 2500ms, poor > 4000ms
+- **INP** (Interaction to Next Paint): good <= 200ms, poor > 500ms
+- **CLS** (Cumulative Layout Shift): good <= 0.1, poor > 0.25
+
+**Supporting Metrics Thresholds:**
+- **TTFB** (Time to First Byte): good <= 800ms, poor > 1800ms
+- **FCP** (First Contentful Paint): good <= 1800ms, poor > 3000ms
+
+**Usage:**
+- Call after navigation and after user actions
+- If you need more stable LCP/CLS/INP, pass waitMs (e.g., 1000-3000ms)
+- Some metrics may be unavailable depending on browser support and whether interactions occurred
+</details>
+
+<details>
+<summary><code>o11y_get-trace-id</code> - Gets the OpenTelemetry compatible trace id of the current session.</summary>
 
 **Parameters:**
 - No input parameters
@@ -633,9 +703,10 @@ Gets the OpenTelemetry compatible trace id of the current session.
 - `traceId` (string, optional): The OpenTelemetry compatible trace id of the current session if available
 
 **Note:** Requires OpenTelemetry to be enabled (`OTEL_ENABLE=true`).
+</details>
 
-#### `o11y_new-trace-id`
-Generates a new OpenTelemetry compatible trace id and sets it to the current session.
+<details>
+<summary><code>o11y_new-trace-id</code> - Generates a new OpenTelemetry compatible trace id and sets it to the current session.</summary>
 
 **Parameters:**
 - No input parameters
@@ -644,9 +715,10 @@ Generates a new OpenTelemetry compatible trace id and sets it to the current ses
 - `traceId` (string): The generated new OpenTelemetry compatible trace id
 
 **Note:** Requires OpenTelemetry to be enabled (`OTEL_ENABLE=true`). The new trace ID is automatically set and will be used for all subsequent traces in the session.
+</details>
 
-#### `o11y_set-trace-id`
-Sets the OpenTelemetry compatible trace id of the current session.
+<details>
+<summary><code>o11y_set-trace-id</code> - Sets the OpenTelemetry compatible trace id of the current session.</summary>
 
 **Parameters:**
 - `traceId` (string, optional): The OpenTelemetry compatible trace id to be set. Leave it empty to clear the session trace id, so no OpenTelemetry trace header will be propagated from browser throughout the API calls
@@ -655,11 +727,12 @@ Sets the OpenTelemetry compatible trace id of the current session.
 - No return value
 
 **Note:** Requires OpenTelemetry to be enabled (`OTEL_ENABLE=true`). When a trace ID is set, it will be propagated in HTTP headers (traceparent) for all API calls, enabling correlation with backend traces.
+</details>
 
 ### Synchronization Tools
 
-#### `sync_wait-for-network-idle`
-Waits until the page reaches a network-idle condition based on the session's tracked in-flight request count.
+<details>
+<summary><code>sync_wait-for-network-idle</code> - Waits until the page reaches a network-idle condition based on the session's tracked in-flight request count.</summary>
 
 **Parameters:**
 - `timeoutMs` (number, optional): Maximum time to wait before failing (milliseconds, default: 30000)
@@ -682,11 +755,12 @@ Waits until the page reaches a network-idle condition based on the session's tra
 - Use after actions that trigger background fetch/XHR activity
 
 **Note:** This tool uses server-side tracking, so it works reliably even with strict CSP. It does NOT rely on window globals or page-injected counters.
+</details>
 
 ### Accessibility (A11Y) Tools
 
-#### `a11y_take-aria-snapshot`
-Captures an ARIA (accessibility) snapshot of the current page or a specific element.
+<details>
+<summary><code>a11y_take-aria-snapshot</code> - Captures an ARIA (accessibility) snapshot of the current page or a specific element.</summary>
 
 **Parameters:**
 - `selector` (string, optional): CSS selector for element to snapshot
@@ -698,9 +772,10 @@ Captures an ARIA (accessibility) snapshot of the current page or a specific elem
 - Use in combination with `accessibility_take-ax-tree-snapshot` for comprehensive UI analysis
 - Provides semantic structure and accessibility roles
 - Helps identify accessibility issues and page hierarchy problems
+</details>
 
-#### `accessibility_take-ax-tree-snapshot`
-Captures a UI-focused snapshot by combining Chromium's Accessibility (AX) tree with runtime visual diagnostics.
+<details>
+<summary><code>accessibility_take-ax-tree-snapshot</code> - Captures a UI-focused snapshot by combining Chromium's Accessibility (AX) tree with runtime visual diagnostics.</summary>
 
 **Parameters:**
 - `roles` (array, optional): Optional role allowlist (button, link, textbox, checkbox, radio, combobox, switch, tab, menuitem, dialog, heading, listbox, listitem, option). If omitted, a built-in set of interactive roles is used
@@ -733,6 +808,7 @@ Captures a UI-focused snapshot by combining Chromium's Accessibility (AX) tree w
 - Identify wrong layout/geometry, styling issues, and overlap/stacking/occlusion problems
 - ALWAYS use `checkOcclusion: true` when investigating UI/layout problems
 - Use alongside `a11y_take-aria-snapshot` tool for complete UI analysis
+</details>
 
 ## Architecture
 
