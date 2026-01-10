@@ -406,10 +406,16 @@ The server can be configured using environment variables:
 - `selector` (string, optional): CSS selector for element to capture
 - `fullPage` (boolean, optional): Capture full scrollable page (default: false)
 - `type` (enum, optional): Image format - "png" or "jpeg" (default: "png")
+- `quality` (number, optional): The quality of the image, between 0-100. Not applicable to PNG images, only used for JPEG format (default: 100)
 
 **Returns:**
 - `filePath` (string): Full path of the saved screenshot file
 - `image` (object): Screenshot image data with mimeType
+
+**Notes:**
+- The `quality` parameter only applies to JPEG images. PNG images are always saved at full quality
+- Lower quality values (e.g., 50-70) result in smaller file sizes but reduced image quality
+- Quality value of 100 provides maximum quality but larger file sizes
 </details>
 
 <details>
