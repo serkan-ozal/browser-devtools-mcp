@@ -92,10 +92,18 @@ export class McpSessionContext {
 
         let httpRequestSequenceNumber: number = 0;
         this.page.on('request', async (req: Request): Promise<void> => {
+            // Ignore OTEL requests
+            if (me.otelController.isOTELRequest(req)) {
+                return;
+            }
             me._numOfInFlightRequests++;
             me._lastNetworkActivityTimestamp = Date.now();
         });
         this.page.on('requestfinished', async (req: Request): Promise<void> => {
+            // Ignore OTEL requests
+            if (me.otelController.isOTELRequest(req)) {
+                return;
+            }
             me._numOfInFlightRequests--;
             me._lastNetworkActivityTimestamp = Date.now();
             me.httpRequests.push(
@@ -109,6 +117,10 @@ export class McpSessionContext {
             }
         });
         this.page.on('requestfailed', async (req: Request): Promise<void> => {
+            // Ignore OTEL requests
+            if (me.otelController.isOTELRequest(req)) {
+                return;
+            }
             me._numOfInFlightRequests--;
             me._lastNetworkActivityTimestamp = Date.now();
             me.httpRequests.push(

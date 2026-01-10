@@ -31,6 +31,12 @@ Core capabilities include:
 - Web Vitals performance metrics (LCP, INP, CLS, TTFB, FCP) with recommendations
 - OpenTelemetry trace ID management for distributed tracing correlation
 
+**Network Stubbing & Mocking:**
+- HTTP request interception and modification (headers, body, method) using glob patterns
+- HTTP response mocking (fulfill with custom status/headers/body or abort) with configurable delay, times limit, and probability
+- Stub management (list all installed stubs, clear specific or all stubs)
+- Supports A/B testing, security testing, offline testing, error scenarios, and flaky API testing
+
 **Synchronization:**
 - Network idle waiting for async operations
 - Configurable timeouts and polling intervals
@@ -57,6 +63,10 @@ UI debugging guidance for AI agents:
 - Before taking screenshots or snapshots, wait for network idle to ensure page stability.
 - Use Web Vitals tool to assess performance and identify optimization opportunities.
 - For distributed tracing, set trace IDs before navigation to correlate frontend and backend traces.
+- For testing and debugging scenarios, use stub tools to intercept/modify requests or mock responses:
+  - Use "stub_intercept-http-request" to modify outgoing requests (inject headers, change body/method)
+  - Use "stub_mock-http-response" to mock responses for offline testing, error scenarios, or flaky API simulation
+  - Use "stub_list" to check what stubs are active and "stub_clear" to remove them when done
 
 This server is designed for AI coding assistants, visual debugging agents, and automated analysis tools 
 that need to reason about what a page looks like, how it is structured, and how it behaves — all through a single MCP interface.
@@ -91,6 +101,10 @@ When asked to check for UI problems, layout issues, or visual bugs, ALWAYS follo
 6. **Console & Network Inspection**: Check for errors and failed requests
    - Call "o11y_get-console-messages" with "type:ERROR" to find JavaScript errors
    - Call "o11y_get-http-requests" with "ok:false" to find failed network requests
+   - If network issues are suspected or testing error scenarios, use stub tools:
+     - Use "stub_mock-http-response" to simulate error responses (e.g., 500, 404, timeout) to test UI error handling
+     - Use "stub_intercept-http-request" to modify requests (e.g., inject headers) to test different scenarios
+     - Use "stub_list" to verify active stubs and "stub_clear" to remove them after testing
 
 7. **Manual Verification**: Calculate bounding box overlaps:
    - Horizontal: (element1.x + element1.width) ≤ element2.x
