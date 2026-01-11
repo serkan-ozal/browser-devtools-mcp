@@ -17,7 +17,7 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 - **Browser Automation**: Navigation, input, clicking, scrolling, viewport control
 - **Execution Monitoring**: Console message capture, HTTP request/response tracking
 - **OpenTelemetry Integration**: Automatic trace injection into web pages, UI trace collection, and backend trace correlation via trace context propagation
-- **JavaScript Evaluation**: Execute code in page context
+- **JavaScript Execution**: Execute code in browser page context or in Node.js VM sandbox on the server
 - **Session Management**: Long-lived, session-based debugging with automatic cleanup
 - **Multiple Transport Modes**: Supports both stdio and HTTP transports
 
@@ -38,12 +38,15 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 - **Scroll**: Scroll the page viewport or specific scrollable elements with multiple modes (by, to, top, bottom, left, right)
 - **Resize Viewport**: Resize the page viewport using Playwright viewport emulation
 - **Resize Window**: Resize the real browser window (OS-level) using Chrome DevTools Protocol
-- **Evaluate**: Execute JavaScript in page context
 
 ### Navigation Tools
 - **Go To**: Navigate to URLs with configurable wait strategies
 - **Go Back**: Navigate backward in history
 - **Go Forward**: Navigate forward in history
+
+### Run Tools
+- **JS in Browser**: Execute JavaScript code inside the active browser page (page context with access to window, document, DOM, and Web APIs)
+- **JS in Sandbox**: Execute JavaScript code in a Node.js VM sandbox on the MCP server (with access to Playwright Page, console logging, and safe built-ins)
 
 ### Observability (O11Y) Tools
 - **Console Messages**: Capture and filter browser console logs with advanced filtering (level, search, timestamp, sequence number)
@@ -583,16 +586,6 @@ The server can be configured using environment variables:
 - On non-Chromium browsers (Firefox/WebKit), CDP is not available and this tool will fail
 </details>
 
-<details>
-<summary><code>interaction_evaluate</code> - Executes JavaScript in the browser console.</summary>
-
-**Parameters:**
-- `script` (string, required): JavaScript code to execute
-
-**Returns:**
-- `result` (any): Result of the JavaScript evaluation
-</details>
-
 ### Navigation Tools
 
 <details>
@@ -616,6 +609,68 @@ The server can be configured using environment variables:
 
 <details>
 <summary><code>navigation_go-forward</code> - Navigates forward in browser history.</summary>
+</details>
+
+### Run Tools
+
+<details>
+<summary><code>run_js-in-browser</code> - Runs custom JavaScript INSIDE the active browser page using Playwright's "page.evaluate()".</summary>
+
+**Parameters:**
+- `script` (string, required): JavaScript code to execute
+
+**Returns:**
+- `result` (any): Result of the evaluation. This value can be of any type, including primitives, arrays, or objects. It represents the direct return value of the JavaScript expression executed in the page context.
+
+**Notes:**
+- The code executes in the PAGE CONTEXT (real browser environment):
+  - Has access to window, document, DOM, Web APIs
+  - Can read/modify the page state
+  - Runs with the same permissions as the loaded web page
+- The code runs in an isolated execution context, but within the page
+- No direct access to Node.js APIs
+- Return value must be serializable
+
+**Typical use cases:**
+- Inspect or mutate DOM state
+- Read client-side variables or framework internals
+- Trigger browser-side logic
+- Extract computed values directly from the page
+</details>
+
+<details>
+<summary><code>run_js-in-sandbox</code> - Runs custom JavaScript inside a Node.js VM sandbox on the MCP server (NOT in the browser).</summary>
+
+**Parameters:**
+- `code` (string, required): JavaScript code to run on the MCP server in a VM sandbox. The code is wrapped in an async IIFE, so `await` is allowed. Use `return ...` to return a value
+- `timeoutMs` (number, optional): Max VM CPU time for synchronous execution in milliseconds (default: 5000, max: 30000)
+
+**Returns:**
+- `result` (any): Return value of the sandboxed code (best-effort JSON-safe). If user returns undefined but logs exist, returns `{ logs }`. If error occurs, returns `{ error, logs }`
+
+**Available bindings:**
+- `page`: Playwright Page (main interaction surface)
+- `console`: captured logs (log/warn/error)
+- `sleep(ms)`: async helper
+
+**Safe built-ins:**
+- Math, JSON, Number, String, Boolean, Array, Object, Date, RegExp
+- isFinite, isNaN, parseInt, parseFloat
+- URL, URLSearchParams
+- TextEncoder, TextDecoder
+- structuredClone
+- crypto.randomUUID()
+- AbortController
+- setTimeout / clearTimeout
+
+**NOT available:**
+- require, process, fs, Buffer
+- globalThis
+
+**Notes:**
+- This runs on the MCP SERVER (not in the browser)
+- This is NOT a security boundary. Intended for trusted automation logic
+- The timeoutMs parameter limits synchronous execution time, but does not automatically time out awaited Promises
 </details>
 
 ### Observability (O11Y) Tools

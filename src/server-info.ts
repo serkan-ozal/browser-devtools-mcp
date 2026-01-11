@@ -23,7 +23,10 @@ Core capabilities include:
 - Keyboard simulation (press-key)
 - Scrolling (viewport or container-based with multiple modes)
 - Viewport emulation and real window resizing
-- JavaScript evaluation in page context
+
+**JavaScript Execution:**
+- Run JavaScript in browser page context (access to window, document, DOM, Web APIs)
+- Run JavaScript in Node.js VM sandbox on the server (with Playwright Page access and safe built-ins)
 
 **Observability & Monitoring:**
 - Console message capture with filtering
@@ -112,6 +115,10 @@ When asked to check for UI problems, layout issues, or visual bugs, ALWAYS follo
 
 8. **Report ALL findings**: aesthetic issues, overlaps, spacing problems, alignment issues, 
    accessibility problems, semantic structure issues, performance problems, console errors, failed requests
+
+9. **JavaScript Execution** (when needed for advanced debugging):
+   - Use "run_js-in-browser" to inspect or mutate DOM state, read client-side variables, or extract computed values directly from the page
+   - Use "run_js-in-sandbox" for server-side automation logic that needs access to Playwright Page object or safe built-ins
 
 **Tool Usage Notes:**
 - AX tree: Technical measurements, occlusion, precise positioning, visual diagnostics

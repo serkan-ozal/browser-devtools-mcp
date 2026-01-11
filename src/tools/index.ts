@@ -4,6 +4,7 @@ import { tools as contentTools } from './content';
 import { tools as interactionTools } from './interaction';
 import { tools as navigationTools } from './navigation';
 import { tools as o11yTools } from './o11y';
+import { tools as runTools } from './run';
 import { tools as stubTools } from './stub';
 import { tools as syncTools } from './sync';
 
@@ -15,6 +16,7 @@ export const tools: Tool[] = [
     ...interactionTools,
     ...navigationTools,
     ...o11yTools,
+    ...runTools,
     ...stubTools,
     ...syncTools,
 ];
