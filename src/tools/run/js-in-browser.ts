@@ -9,19 +9,37 @@ import {
 
 import { z } from 'zod';
 
-export interface EvaluateInput extends ToolInput {
+export interface JsInBrowserInput extends ToolInput {
     script: string;
 }
 
-export interface EvaluateOutput extends ToolOutput {}
+export interface JsInBrowserOutput extends ToolOutput {}
 
-export class Evaluate implements Tool {
+export class JsInBrowser implements Tool {
     name(): string {
-        return 'interaction_evaluate';
+        return 'run_js-in-browser';
     }
 
     description(): string {
-        return 'Executes JavaScript in the browser console.';
+        return `
+Runs custom JavaScript INSIDE the active browser page using Playwright's "page.evaluate()".
+
+This code executes in the PAGE CONTEXT (real browser environment):
+- Has access to window, document, DOM, Web APIs
+- Can read/modify the page state
+- Runs with the same permissions as the loaded web page
+
+Typical use cases:
+- Inspect or mutate DOM state
+- Read client-side variables or framework internals
+- Trigger browser-side logic
+- Extract computed values directly from the page
+
+Notes:
+- The code runs in an isolated execution context, but within the page
+- No direct access to Node.js APIs
+- Return value must be serializable
+        `;
     }
 
     inputSchema(): ToolInputSchema {
@@ -41,8 +59,8 @@ The structure and type of this value are not constrained and depend entirely on 
 
     async handle(
         context: McpSessionContext,
-        args: EvaluateInput
-    ): Promise<EvaluateOutput> {
+        args: JsInBrowserInput
+    ): Promise<JsInBrowserOutput> {
         const result: any = await context.page.evaluate(args.script);
         return {
             result,
