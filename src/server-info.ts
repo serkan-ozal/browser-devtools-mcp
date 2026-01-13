@@ -14,6 +14,7 @@ Core capabilities include:
 - Screenshots (full page or specific elements)
 - HTML and text content extraction with filtering options
 - PDF generation with customizable formats
+- Design comparison: Compare live page UI against Figma designs with similarity scoring
 - Accessibility snapshots (ARIA and AX tree) with visual diagnostics
 - Viewport and window resizing for responsive testing
 
@@ -44,6 +45,11 @@ Core capabilities include:
 - Network idle waiting for async operations
 - Configurable timeouts and polling intervals
 
+**Design Comparison:**
+- Figma design comparison: Compare live page UI against Figma design snapshots
+- Multi-signal similarity scoring (MSSIM, image embedding, text embedding)
+- Configurable weights and comparison modes (raw vs semantic)
+
 **Advanced Features:**
 - OpenTelemetry integration: Automatic UI trace collection and backend trace correlation
 - Session-based architecture with long-lived browser contexts
@@ -65,6 +71,11 @@ UI debugging guidance for AI agents:
   semantics (labels, roles, disabled state, focusability) match the visible UI.
 - Before taking screenshots or snapshots, wait for network idle to ensure page stability.
 - Use Web Vitals tool to assess performance and identify optimization opportunities.
+- For design validation, use "compare-page-with-design" to compare live page UI against Figma designs:
+  - Use "semantic" MSSIM mode for comparing real data vs design data (less sensitive to text/value differences)
+  - Use "raw" MSSIM mode only when expecting near pixel-identical output
+  - If layout mismatch is suspected, run with fullPage=true first, then retry with a selector for the problematic region
+  - Notes explain which signals were used or skipped; skipped signals usually mean missing cloud configuration
 - For distributed tracing, set trace IDs before navigation to correlate frontend and backend traces.
 - For testing and debugging scenarios, use stub tools to intercept/modify requests or mock responses:
   - Use "stub_intercept-http-request" to modify outgoing requests (inject headers, change body/method)
@@ -97,11 +108,18 @@ When asked to check for UI problems, layout issues, or visual bugs, ALWAYS follo
    - Best for understanding page hierarchy and accessibility issues
    - Use in combination with AX tree snapshot for comprehensive analysis
 
-5. **Performance Check** (optional but recommended): Call "o11y_get-web-vitals" to assess page performance
+5. **Design Comparison** (if Figma design is available): Call "compare-page-with-design" tool
+   - Compares live page UI against Figma design snapshot
+   - Returns combined similarity score using multiple signals (MSSIM, image embedding, text embedding)
+   - Use "semantic" mode for real data vs design data comparisons
+   - Use "raw" mode only when expecting pixel-identical output
+   - Notes explain which signals were used or skipped
+
+6. **Performance Check** (optional but recommended): Call "o11y_get-web-vitals" to assess page performance
    - Identifies performance issues that may affect user experience
    - Provides actionable recommendations based on Google's thresholds
 
-6. **Console & Network Inspection**: Check for errors and failed requests
+7. **Console & Network Inspection**: Check for errors and failed requests
    - Call "o11y_get-console-messages" with "type:ERROR" to find JavaScript errors
    - Call "o11y_get-http-requests" with "ok:false" to find failed network requests
    - If network issues are suspected or testing error scenarios, use stub tools:
@@ -109,14 +127,15 @@ When asked to check for UI problems, layout issues, or visual bugs, ALWAYS follo
      - Use "stub_intercept-http-request" to modify requests (e.g., inject headers) to test different scenarios
      - Use "stub_list" to verify active stubs and "stub_clear" to remove them after testing
 
-7. **Manual Verification**: Calculate bounding box overlaps:
+8. **Manual Verification**: Calculate bounding box overlaps:
    - Horizontal: (element1.x + element1.width) ≤ element2.x
    - Vertical: (element1.y + element1.height) ≤ element2.y
 
-8. **Report ALL findings**: aesthetic issues, overlaps, spacing problems, alignment issues, 
-   accessibility problems, semantic structure issues, performance problems, console errors, failed requests
+9. **Report ALL findings**: aesthetic issues, overlaps, spacing problems, alignment issues, 
+   accessibility problems, semantic structure issues, design parity issues (if compared with Figma),
+   performance problems, console errors, failed requests
 
-9. **JavaScript Execution** (when needed for advanced debugging):
+10. **JavaScript Execution** (when needed for advanced debugging):
    - Use "run_js-in-browser" to inspect or mutate DOM state, read client-side variables, or extract computed values directly from the page
    - Use "run_js-in-sandbox" for server-side automation logic that needs access to Playwright Page object or safe built-ins
 
