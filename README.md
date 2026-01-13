@@ -13,6 +13,7 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 ### Key Capabilities
 
 - **Visual Inspection**: Screenshots, ARIA snapshots, HTML/text extraction, PDF generation
+- **Design Comparison**: Compare live page UI against Figma designs with similarity scoring
 - **DOM & Code-Level Debugging**: Element inspection, computed styles, accessibility data
 - **Browser Automation**: Navigation, input, clicking, scrolling, viewport control
 - **Execution Monitoring**: Console message capture, HTTP request/response tracking
@@ -67,6 +68,9 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 - **Mock HTTP Response**: Mock HTTP responses (fulfill with custom status/headers/body or abort) with configurable delay, times limit, and probability (flaky testing)
 - **List Stubs**: List all currently installed stubs for the active browser context
 - **Clear Stubs**: Remove one or all installed stubs
+
+### Figma Tools
+- **Compare Page with Design**: Compare the current page UI against a Figma design snapshot and return a combined similarity score using multiple signals (MSSIM, image embedding, text embedding)
 
 ## Prerequisites
 
@@ -395,6 +399,8 @@ The server can be configured using environment variables:
 | `OTEL_EXPORTER_HTTP_URL` | OpenTelemetry collector base URL (e.g., "http://localhost:4318") | (none) |
 | `OTEL_EXPORTER_HTTP_HEADERS` | OpenTelemetry exporter HTTP headers (comma-separated key=value pairs) | (none) |
 | `OTEL_INSTRUMENTATION_USER_INTERACTION_EVENTS` | User interaction events to instrument (comma-separated, e.g., "click,submit") | `click` |
+| `FIGMA_ACCESS_TOKEN` | Figma API access token for design comparison | (none) |
+| `FIGMA_API_BASE_URL` | Figma API base URL | `https://api.figma.com/v1` |
 
 ## Available Tools
 
@@ -989,6 +995,60 @@ The server can be configured using environment variables:
 - Useful after testing or debugging sessions
 </details>
 
+### Figma Tools
+
+<details>
+<summary><code>compare-page-with-design</code> - Compares the current page UI against a Figma design snapshot and returns a combined similarity score.</summary>
+
+**Parameters:**
+- `figmaFileKey` (string, required): Figma file key (the part after /file/ in Figma URL)
+- `figmaNodeId` (string, required): Figma node id (frame/component node, usually looks like "12:34")
+- `selector` (string, optional): Optional CSS selector to screenshot only a specific element instead of the whole page
+- `fullPage` (boolean, optional): If true, captures the full scrollable page. Ignored when selector is provided (default: true)
+- `figmaScale` (number, optional): Optional scale for Figma raster export (e.g., 1, 2, 3)
+- `figmaFormat` (enum, optional): Optional format for Figma export - "png" or "jpg" (default: "png")
+- `weights` (object, optional): Optional weights for combining signals. Missing/inactive signals are ignored and weights are renormalized:
+  - `mssim` (number, optional): Weight for MSSIM signal
+  - `imageEmbedding` (number, optional): Weight for image embedding signal
+  - `textEmbedding` (number, optional): Weight for vision→text→text embedding signal
+- `mssimMode` (enum, optional): MSSIM mode - "raw" (stricter) or "semantic" (more layout-oriented, default: "semantic")
+- `maxDim` (number, optional): Optional preprocessing max dimension forwarded to compare pipeline
+- `jpegQuality` (number, optional): Optional JPEG quality forwarded to compare pipeline (used only when JPEG encoding is selected internally, range: 50-100)
+
+**Returns:**
+- `score` (number): Combined similarity score in the range [0..1]. Higher means more similar
+- `notes` (array): Human-readable notes explaining which signals were used and their individual scores
+- `meta` (object): Metadata about what was compared:
+  - `pageUrl` (string): URL of the page that was compared
+  - `pageTitle` (string): Title of the page that was compared
+  - `figmaFileKey` (string): Figma file key used for the design snapshot
+  - `figmaNodeId` (string): Figma node id used for the design snapshot
+  - `selector` (string | null): Selector used for page screenshot, if any. Null means full page
+  - `fullPage` (boolean): Whether the page screenshot was full-page
+  - `pageImageType` (enum): Image type of the captured page screenshot ("png" or "jpeg")
+  - `figmaImageType` (enum): Image type of the captured Figma snapshot ("png" or "jpeg")
+
+**How it works:**
+1. Fetches a raster snapshot from Figma (frame/node screenshot)
+2. Takes a screenshot of the live browser page (full page or a specific selector)
+3. Computes multiple similarity signals and combines them into one score:
+   - MSSIM (structural similarity; always available)
+   - Image embedding similarity (optional; may be skipped if provider is not configured)
+   - Vision→text→text embedding similarity (optional; may be skipped if provider is not configured)
+
+**Usage:**
+- Prefer 'semantic' MSSIM mode when comparing Figma sample data vs real data (less sensitive to text/value differences)
+- Use 'raw' MSSIM mode only when you expect near pixel-identical output
+- If you suspect layout/structure mismatch, run with fullPage=true first, then retry with a selector for the problematic region
+- Notes explain which signals were used or skipped; skipped signals usually mean missing cloud configuration (e.g., AWS_REGION, inference profile, etc.)
+
+**Use cases:**
+- UI regression checks
+- Design parity validation
+- "Does this page still match the intended layout?" validation
+- Automated visual testing
+</details>
+
 ## Architecture
 
 ### Session Management
@@ -1103,9 +1163,10 @@ This server enables AI assistants to:
 3. **Distributed Tracing**: Enable OpenTelemetry to correlate frontend and backend traces for end-to-end debugging
 4. **Test User Flows**: Automate navigation and interactions
 5. **Visual Verification**: Compare visual states, verify UI changes
-6. **Content Extraction**: Get HTML/text content with filtering and cleaning options
-7. **Accessibility Analysis**: Use ARIA and AX tree snapshots to understand page structure and detect UI issues
-8. **Performance Analysis**: Monitor HTTP request timing and failures
+6. **Design Comparison**: Compare live page UI against Figma designs with automated similarity scoring
+7. **Content Extraction**: Get HTML/text content with filtering and cleaning options
+8. **Accessibility Analysis**: Use ARIA and AX tree snapshots to understand page structure and detect UI issues
+9. **Performance Analysis**: Monitor HTTP request timing and failures
 
 ### Example Workflow
 
@@ -1115,9 +1176,10 @@ This server enables AI assistants to:
 4. Check console messages with `o11y_get-console-messages` for errors
 5. Monitor HTTP requests with `o11y_get-http-requests` to see API calls
 6. Capture accessibility snapshots with `a11y_take-aria-snapshot` and `accessibility_take-ax-tree-snapshot` to understand page structure
-7. Interact with elements using `interaction_click`, `interaction_fill`, etc.
-8. Extract content using `content_get-as-html` or `content_get-as-text`
-9. Save the page as PDF using `content_save-as-pdf` for documentation
+7. Compare page with Figma design using `compare-page-with-design` to validate design parity
+8. Interact with elements using `interaction_click`, `interaction_fill`, etc.
+9. Extract content using `content_get-as-html` or `content_get-as-text`
+10. Save the page as PDF using `content_save-as-pdf` for documentation
 
 ## Contributing
 
