@@ -50,10 +50,17 @@ Core capabilities include:
 - Multi-signal similarity scoring (MSSIM, image embedding, text embedding)
 - Configurable weights and comparison modes (raw vs semantic)
 
+**React Component Inspection:**
+- Get component for element: Find React component(s) associated with a DOM element using React Fiber
+- Get element for component: Map a React component instance to the DOM elements it renders
+- Requires persistent browser context (BROWSER_PERSISTENT_ENABLE=true) for optimal operation
+- React DevTools extension must be manually installed in the browser profile (MCP server does NOT auto-install)
+- Without extension, tools fall back to best-effort DOM scanning for __reactFiber$ pointers (less reliable)
+
 **Advanced Features:**
 - OpenTelemetry integration: Automatic UI trace collection and backend trace correlation
 - Session-based architecture with long-lived browser contexts
-- Persistent browser contexts for stateful sessions
+- Persistent browser contexts for stateful sessions (required for React tools)
 - Headless and headful mode support
 - System-installed browser usage option
 - Streamable responses and server-initiated notifications
@@ -76,6 +83,12 @@ UI debugging guidance for AI agents:
   - Use "raw" MSSIM mode only when expecting near pixel-identical output
   - If layout mismatch is suspected, run with fullPage=true first, then retry with a selector for the problematic region
   - Notes explain which signals were used or skipped; skipped signals usually mean missing cloud configuration
+- For React component inspection, use "react_get-component-for-element" and "react_get-element-for-component":
+  - These tools work best with persistent browser context enabled (BROWSER_PERSISTENT_ENABLE=true)
+  - React DevTools extension must be manually installed in the browser profile (MCP server does NOT auto-install)
+  - Chrome Web Store: https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi
+  - Without extension, tools use best-effort DOM scanning (less reliable than using DevTools hook)
+  - Component names and debug source info are best-effort and may vary by build (dev/prod)
 - For distributed tracing, set trace IDs before navigation to correlate frontend and backend traces.
 - For testing and debugging scenarios, use stub tools to intercept/modify requests or mock responses:
   - Use "stub_intercept-http-request" to modify outgoing requests (inject headers, change body/method)
@@ -115,11 +128,19 @@ When asked to check for UI problems, layout issues, or visual bugs, ALWAYS follo
    - Use "raw" mode only when expecting pixel-identical output
    - Notes explain which signals were used or skipped
 
-6. **Performance Check** (optional but recommended): Call "o11y_get-web-vitals" to assess page performance
+6. **React Component Inspection** (if page uses React): Use React tools to understand component structure
+   - Call "react_get-component-for-element" with selector or (x,y) to find React component for a DOM element
+   - Call "react_get-element-for-component" to find DOM elements rendered by a React component
+   - **Important:** These tools require persistent browser context (BROWSER_PERSISTENT_ENABLE=true)
+   - React DevTools extension must be manually installed in the browser profile for optimal reliability
+   - Without extension, tools use best-effort DOM scanning (less reliable)
+   - Component names and debug source info are best-effort and may vary by build (dev/prod)
+
+7. **Performance Check** (optional but recommended): Call "o11y_get-web-vitals" to assess page performance
    - Identifies performance issues that may affect user experience
    - Provides actionable recommendations based on Google's thresholds
 
-7. **Console & Network Inspection**: Check for errors and failed requests
+8. **Console & Network Inspection**: Check for errors and failed requests
    - Call "o11y_get-console-messages" with "type:ERROR" to find JavaScript errors
    - Call "o11y_get-http-requests" with "ok:false" to find failed network requests
    - If network issues are suspected or testing error scenarios, use stub tools:
@@ -127,15 +148,15 @@ When asked to check for UI problems, layout issues, or visual bugs, ALWAYS follo
      - Use "stub_intercept-http-request" to modify requests (e.g., inject headers) to test different scenarios
      - Use "stub_list" to verify active stubs and "stub_clear" to remove them after testing
 
-8. **Manual Verification**: Calculate bounding box overlaps:
+9. **Manual Verification**: Calculate bounding box overlaps:
    - Horizontal: (element1.x + element1.width) ≤ element2.x
    - Vertical: (element1.y + element1.height) ≤ element2.y
 
-9. **Report ALL findings**: aesthetic issues, overlaps, spacing problems, alignment issues, 
+10. **Report ALL findings**: aesthetic issues, overlaps, spacing problems, alignment issues, 
    accessibility problems, semantic structure issues, design parity issues (if compared with Figma),
-   performance problems, console errors, failed requests
+   React component structure issues (if inspected), performance problems, console errors, failed requests
 
-10. **JavaScript Execution** (when needed for advanced debugging):
+11. **JavaScript Execution** (when needed for advanced debugging):
    - Use "run_js-in-browser" to inspect or mutate DOM state, read client-side variables, or extract computed values directly from the page
    - Use "run_js-in-sandbox" for server-side automation logic that needs access to Playwright Page object or safe built-ins
 

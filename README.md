@@ -72,6 +72,17 @@ Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, 
 ### Figma Tools
 - **Compare Page with Design**: Compare the current page UI against a Figma design snapshot and return a combined similarity score using multiple signals (MSSIM, image embedding, text embedding)
 
+### React Tools
+- **Get Component for Element**: Find React component(s) associated with a DOM element using React Fiber (best-effort)
+- **Get Element for Component**: Map a React component instance to the DOM elements it renders by traversing the React Fiber graph
+
+**Important Requirements for React Tools:**
+- **Persistent Browser Context**: React tools work best with persistent browser context enabled (`BROWSER_PERSISTENT_ENABLE=true`)
+- **React DevTools Extension**: For optimal reliability, manually install the "React Developer Tools" Chrome extension in the browser profile. The MCP server does NOT automatically install the extension.
+  - Chrome Web Store: https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi
+  - The extension enables reliable root discovery and component search via `__REACT_DEVTOOLS_GLOBAL_HOOK__`
+  - Without the extension, tools fall back to scanning DOM for `__reactFiber$` pointers (best-effort, less reliable)
+
 ## Prerequisites
 
 - Node.js 18+
@@ -387,7 +398,7 @@ The server can be configured using environment variables:
 | `CONSOLE_MESSAGES_BUFFER_SIZE` | Maximum console messages to buffer | `1000` |
 | `HTTP_REQUESTS_BUFFER_SIZE` | Maximum HTTP requests to buffer | `1000` |
 | `BROWSER_HEADLESS_ENABLE` | Run browser in headless mode | `true` |
-| `BROWSER_PERSISTENT_ENABLE` | Use persistent browser context (preserves cookies, localStorage, etc.) | `false` |
+| `BROWSER_PERSISTENT_ENABLE` | Use persistent browser context (preserves cookies, localStorage, etc.). **Required for React tools to work optimally.** | `false` |
 | `BROWSER_PERSISTENT_USER_DATA_DIR` | Directory for persistent browser context user data | `./browser-devtools-mcp` |
 | `BROWSER_USE_INSTALLED_ON_SYSTEM` | Use system-installed Chrome browser instead of Playwright's bundled browser | `false` |
 | `BROWSER_EXECUTABLE_PATH` | Custom browser executable path | (uses Playwright default) |
@@ -1076,12 +1087,25 @@ The server supports multiple browser engines:
   
   Persistent contexts are shared across sessions and are not automatically closed when sessions end.
   
+  **Important for React Tools:** React tools work best with persistent browser context enabled. This allows you to manually install the React DevTools extension in the browser profile, which enables reliable root discovery and component search via `__REACT_DEVTOOLS_GLOBAL_HOOK__`.
+  
 - **System Browser**: When enabled (`BROWSER_USE_INSTALLED_ON_SYSTEM=true`), the server uses the system-installed Chrome browser instead of Playwright's bundled browser. This is useful for:
   - Testing with the exact browser version users have
   - Using browser extensions installed on the system
   - Better compatibility with certain web applications
   
   **Note:** System browser support is currently only available for Chromium/Chrome.
+
+**React DevTools Extension Setup:**
+- React tools (`react_get-component-for-element`, `react_get-element-for-component`) work best when the React DevTools extension is installed in the browser profile
+- The MCP server does NOT automatically install the extension - you must install it manually
+- **Installation Steps:**
+  1. Enable persistent browser context: `BROWSER_PERSISTENT_ENABLE=true`
+  2. Start the MCP server (or navigate to a page in headful mode)
+  3. Manually install the React Developer Tools extension from Chrome Web Store:
+     - https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi
+  4. The extension will be available in all subsequent sessions using the same persistent context
+- **Without the Extension:** Tools will still work but use best-effort DOM scanning for `__reactFiber$` pointers, which is less reliable than using the DevTools hook
 
 Browser instances are shared across sessions for efficiency. Each session gets its own isolated browser context, unless persistent context is enabled (in which case contexts are shared).
 
