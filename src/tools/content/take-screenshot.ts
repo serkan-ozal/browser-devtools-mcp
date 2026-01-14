@@ -267,6 +267,11 @@ export class TakeScreenshot implements Tool {
     ): Buffer {
         // https://docs.claude.com/en/docs/build-with-claude/vision#evaluate-image-size
         // Not more than 1.15 megapixel, linear size not more than 1568.
+        // Additionally, we aim for max ~800KB buffer size to stay well under 1MB limit.
+
+        const MAX_BUFFER_SIZE: number = 800 * 1024; // 800KB target
+        const MAX_PIXELS: number = 1.15 * 1024 * 1024; // 1.15 megapixel
+        const MAX_LINEAR_SIZE: number = 1568;
 
         const image =
             screenshotType === ScreenshotType.PNG
@@ -274,24 +279,58 @@ export class TakeScreenshot implements Tool {
                 : jpegjs.decode(buffer, { maxMemoryUsageInMB: 512 });
         const pixels: number = image.width * image.height;
 
-        const shrink: number = Math.min(
-            1568 / image.width,
-            1568 / image.height,
-            Math.sqrt((1.15 * 1024 * 1024) / pixels)
+        // Initial shrink based on Claude's limits
+        let shrink: number = Math.min(
+            MAX_LINEAR_SIZE / image.width,
+            MAX_LINEAR_SIZE / image.height,
+            Math.sqrt(MAX_PIXELS / pixels)
         );
+
+        // If already within limits, check buffer size
         if (shrink > 1) {
-            return buffer;
+            shrink = 1;
         }
 
-        const width: number = (image.width * shrink) | 0;
-        const height: number = (image.height * shrink) | 0;
-        const scaledImage: ImageData = this._scaleImageToSize(image, {
+        let width: number = (image.width * shrink) | 0;
+        let height: number = (image.height * shrink) | 0;
+        let scaledImage: ImageData = this._scaleImageToSize(image, {
             width,
             height,
         });
-        return screenshotType === ScreenshotType.PNG
-            ? PNG.sync.write(scaledImage as any)
-            : jpegjs.encode(scaledImage, 80).data;
+
+        // Convert PNG to JPEG for better compression, or use lower quality JPEG
+        let result: Buffer;
+        let currentType: ScreenshotType = screenshotType;
+        let quality: number = screenshotType === ScreenshotType.PNG ? 75 : 70;
+
+        if (screenshotType === ScreenshotType.PNG) {
+            // Convert PNG to JPEG for better compression (smaller file size)
+            result = jpegjs.encode(scaledImage, quality).data;
+            currentType = ScreenshotType.JPEG;
+        } else {
+            result = jpegjs.encode(scaledImage, quality).data;
+        }
+
+        // Buffer size check - if still too large, apply more aggressive scaling
+        let iterations: number = 0;
+        const MAX_ITERATIONS: number = 5;
+        while (result.length > MAX_BUFFER_SIZE && iterations < MAX_ITERATIONS) {
+            // Reduce quality
+            quality = Math.max(50, quality - 10);
+
+            // If reducing quality is not enough, increase scaling
+            if (quality <= 50 && result.length > MAX_BUFFER_SIZE) {
+                shrink *= 0.85; // Scale down by 15%
+                width = Math.max(200, (image.width * shrink) | 0);
+                height = Math.max(200, (image.height * shrink) | 0);
+                scaledImage = this._scaleImageToSize(image, { width, height });
+            }
+
+            result = jpegjs.encode(scaledImage, quality).data;
+            iterations++;
+        }
+
+        return result;
     }
 
     async handle(

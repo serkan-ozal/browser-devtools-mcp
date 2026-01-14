@@ -67,6 +67,7 @@ function _browserLaunchOptions(browserOptions: BrowserOptions): LaunchOptions {
                 launchOptions.args = [
                     '--disable-blink-features=AutomationControlled',
                 ];
+                launchOptions.ignoreDefaultArgs = ['--disable-extensions'];
                 break;
             default:
                 throw new Error(
@@ -139,6 +140,7 @@ function _persistentBrowserContextLaunchOptions(
                 launchOptions.args = [
                     '--disable-blink-features=AutomationControlled',
                 ];
+                launchOptions.ignoreDefaultArgs = ['--disable-extensions'];
                 break;
             default:
                 throw new Error(
