@@ -13,7 +13,10 @@
   },
   "author": "Serkan Ozal <serkanozal86@gmail.com> (https://github.com/serkan-ozal)",
   "homepage": "https://github.com/serkan-ozal/browser-devtools-mcp",
-  "repository": "serkan-ozal/browser-devtools-mcp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/serkan-ozal/browser-devtools-mcp.git"
+  },
   "license": "MIT",
   "keywords": [
     "ai",
@@ -26,6 +29,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "mcpName": "io.github.serkan-ozal/browser-devtools-mcp",
   "scripts": {
     "clean": "rimraf dist",
     "build:otel": "node scripts/build-otel.mjs",

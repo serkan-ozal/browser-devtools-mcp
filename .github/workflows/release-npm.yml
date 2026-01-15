@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write  # Required for creating GitHub releases
-      id-token: write  # Required for MCP registry OIDC authentication
     steps:
       - uses: actions/checkout@v4
         with:
