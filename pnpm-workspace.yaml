@@ -1,0 +1,7 @@
+onlyBuiltDependencies:
+  - '@playwright/browser-chromium'
+  - '@playwright/browser-firefox'
+  - '@playwright/browser-webkit'
+  - esbuild
+  - protobufjs
+  - sharp

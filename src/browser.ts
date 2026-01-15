@@ -10,7 +10,7 @@ import fs from 'fs';
 
 import type { Browser, BrowserContext, Locator, Page } from 'playwright';
 import { chromium, firefox, webkit } from 'playwright';
-import { LaunchOptions } from 'playwright-core';
+import type { LaunchOptions } from 'playwright';
 
 export enum BrowserType {
     CHROMIUM = 'chromium',
