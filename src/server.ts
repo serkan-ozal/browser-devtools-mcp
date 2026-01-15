@@ -151,8 +151,8 @@ export async function createServer(
                 description: t.description(),
                 inputSchema: t.inputSchema(),
                 outputSchema: t.outputSchema(),
-            },
-            createToolCallback(t)
+            } as any,
+            createToolCallback(t) as any
         );
     });
 
