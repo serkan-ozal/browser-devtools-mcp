@@ -1,4 +1,4 @@
-name: NPM Release
+name: Release
 
 on:
   workflow_dispatch:
@@ -43,3 +43,13 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
           NODE_DEBUG: release-it:*
+      - name: Sync Version for MCPB
+        run: ./scripts/mcpb-sync-version.sh
+      - name: Pack MCPB
+        run: npm run mcpb:pack
+      - name: Release MCPB
+        run: ./scripts/mcpb-release.sh
+        env:
+          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}       # gh uses this
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}   # fallback
+          GITHUB_REPOSITORY: ${{ github.repository }}    # owner/repo

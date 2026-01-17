@@ -136,3 +136,6 @@ dist
 .pnp.*
 
 .idea
+.mcpb
+.smithery
+browser-devtools-mcp

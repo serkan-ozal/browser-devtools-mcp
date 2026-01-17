@@ -3,10 +3,12 @@
 import * as config from './config';
 import * as logger from './logger';
 import {
-    createServer,
+    createServer as createMcpServer,
+    createAndConnectServer as createAndConnectMcpServer,
     createSession,
     McpServerConfig,
     McpServerSession,
+    createAndConnectServer,
 } from './server';
 
 import crypto from 'crypto';
@@ -15,6 +17,7 @@ import { Socket } from 'net';
 import { StreamableHTTPTransport } from '@hono/mcp';
 import { serve } from '@hono/node-server';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { Command, Option, InvalidOptionArgumentError } from 'commander';
 import { Context, Hono } from 'hono';
@@ -102,7 +105,7 @@ function _getConfig(): McpServerConfig {
 
 async function _startStdioServer(): Promise<void> {
     const transport: StdioServerTransport = new StdioServerTransport();
-    await createServer(transport, {
+    await createAndConnectMcpServer(transport, {
         config: _getConfig(),
     });
 }
@@ -167,7 +170,7 @@ async function _createTransport(
         },
     });
 
-    holder.server = await createServer(transport, {
+    holder.server = await createAndConnectServer(transport, {
         config: serverConfig,
     });
 
@@ -410,3 +413,10 @@ main().catch((err: any): never => {
     logger.error('MCP server error', err);
     process.exit(1);
 });
+
+export default function createServer({ config, session, env }: any): Server {
+    const mcpServer: McpServer = createMcpServer({
+        config: _getConfig(),
+    });
+    return mcpServer.server;
+}

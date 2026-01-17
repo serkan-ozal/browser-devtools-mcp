@@ -1,0 +1,55 @@
+# Browser user data (Chrome profile)
+browser-devtools-mcp/
+
+# Node modules
+node_modules/
+
+# Source files (only dist needed)
+src/
+
+# Build artifacts
+.smithery/
+.mcpb/
+
+# Git & GitHub
+.git/
+.github/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__/
+
+# Config files not needed at runtime
+tsconfig.json
+.prettierrc.json
+.eslintrc.json
+smithery.yaml
+smithery.config.ts
+pnpm-workspace.yaml
+
+# Documentation (optional - remove if you want docs in bundle)
+# README.md
+
+# Scripts
+scripts/
+
+# Docker
+docker/
+
+# Package manager locks (dist has no deps to install)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Other
+*.log
+*.tmp
+.DS_Store

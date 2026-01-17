@@ -1,0 +1,315 @@
+{
+  "manifest_version": "0.2",
+  "name": "browser-devtools-mcp",
+  "display_name": "Browser DevTools MCP",
+  "version": "0.1.1",
+  "description": "MCP Server for Browser Dev Tools",
+  "long_description": "Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, enabling deep, bidirectional debugging and interaction with live web pages. It supports both visual understanding and code-level inspection of browser state, making it ideal for AI-driven exploration, diagnosis, and automation.",
+  "author": {
+    "name": "Serkan Ozal",
+    "email": "serkanozal86@gmail.com",
+    "url": "https://github.com/serkan-ozal"
+  },
+  "homepage": "https://github.com/serkan-ozal/browser-devtools-mcp",
+  "documentation": "https://github.com/serkan-ozal/browser-devtools-mcp",
+  "support": "https://github.com/serkan-ozal/browser-devtools-mcp/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/serkan-ozal/browser-devtools-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "browser",
+    "devtools",
+    "playwright",
+    "automation",
+    "debugging",
+    "ai-agent",
+    "web-vitals",
+    "accessibility",
+    "screenshot"
+  ],
+  "user_config": {
+    "browser_headless": {
+      "type": "boolean",
+      "title": "Headless Mode",
+      "description": "Run browser in headless mode (no visible window)",
+      "default": true,
+      "required": false
+    },
+    "browser_persistent": {
+      "type": "boolean",
+      "title": "Persistent Browser",
+      "description": "Enable persistent browser context (keeps cookies, localStorage, etc.)",
+      "default": false,
+      "required": false
+    },
+    "browser_user_data_dir": {
+      "type": "string",
+      "title": "User Data Directory",
+      "description": "Directory for persistent browser user data",
+      "required": false
+    },
+    "browser_use_system": {
+      "type": "boolean",
+      "title": "Use System Browser",
+      "description": "Use system-installed browser instead of bundled Playwright browser",
+      "default": false,
+      "required": false
+    },
+    "browser_executable_path": {
+      "type": "string",
+      "title": "Browser Executable Path",
+      "description": "Custom path to browser executable",
+      "required": false
+    },
+    "otel_enable": {
+      "type": "boolean",
+      "title": "Enable OpenTelemetry",
+      "description": "Enable OpenTelemetry instrumentation in browser",
+      "default": false,
+      "required": false
+    },
+    "otel_service_name": {
+      "type": "string",
+      "title": "OTel Service Name",
+      "description": "OpenTelemetry service name",
+      "default": "frontend",
+      "required": false
+    },
+    "otel_exporter_type": {
+      "type": "string",
+      "title": "OTel Exporter Type",
+      "description": "OpenTelemetry exporter type (none, otlp/http, console)",
+      "default": "none",
+      "required": false
+    },
+    "otel_exporter_url": {
+      "type": "string",
+      "title": "OTel Exporter URL",
+      "description": "OpenTelemetry collector URL (e.g., http://localhost:4318)",
+      "required": false
+    },
+    "otel_exporter_headers": {
+      "type": "string",
+      "title": "OTel Exporter Headers",
+      "description": "OpenTelemetry HTTP headers (key=value,key=value format)",
+      "sensitive": true,
+      "required": false
+    },
+    "aws_region": {
+      "type": "string",
+      "title": "AWS Region",
+      "description": "AWS region for Bedrock services",
+      "required": false
+    },
+    "aws_profile": {
+      "type": "string",
+      "title": "AWS Profile",
+      "description": "AWS profile name for credentials",
+      "required": false
+    },
+    "bedrock_enable": {
+      "type": "boolean",
+      "title": "Enable Amazon Bedrock",
+      "description": "Enable Amazon Bedrock for AI-powered features (Figma comparison)",
+      "default": false,
+      "required": false
+    },
+    "bedrock_image_model": {
+      "type": "string",
+      "title": "Bedrock Image Model",
+      "description": "Amazon Bedrock model ID for image embeddings",
+      "required": false
+    },
+    "bedrock_text_model": {
+      "type": "string",
+      "title": "Bedrock Text Model",
+      "description": "Amazon Bedrock model ID for text embeddings",
+      "required": false
+    },
+    "bedrock_vision_model": {
+      "type": "string",
+      "title": "Bedrock Vision Model",
+      "description": "Amazon Bedrock model ID for vision tasks",
+      "required": false
+    },
+    "figma_access_token": {
+      "type": "string",
+      "title": "Figma Access Token",
+      "description": "Figma API access token for design comparison features",
+      "sensitive": true,
+      "required": false
+    }
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "./dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "BROWSER_HEADLESS_ENABLE": "${user_config.browser_headless}",
+        "BROWSER_PERSISTENT_ENABLE": "${user_config.browser_persistent}",
+        "BROWSER_PERSISTENT_USER_DATA_DIR": "${user_config.browser_user_data_dir}",
+        "BROWSER_USE_INSTALLED_ON_SYSTEM": "${user_config.browser_use_system}",
+        "BROWSER_EXECUTABLE_PATH": "${user_config.browser_executable_path}",
+        "OTEL_ENABLE": "${user_config.otel_enable}",
+        "OTEL_SERVICE_NAME": "${user_config.otel_service_name}",
+        "OTEL_EXPORTER_TYPE": "${user_config.otel_exporter_type}",
+        "OTEL_EXPORTER_HTTP_URL": "${user_config.otel_exporter_url}",
+        "OTEL_EXPORTER_HTTP_HEADERS": "${user_config.otel_exporter_headers}",
+        "AWS_REGION": "${user_config.aws_region}",
+        "AWS_PROFILE": "${user_config.aws_profile}",
+        "AMAZON_BEDROCK_ENABLE": "${user_config.bedrock_enable}",
+        "AMAZON_BEDROCK_IMAGE_EMBED_MODEL_ID": "${user_config.bedrock_image_model}",
+        "AMAZON_BEDROCK_TEXT_EMBED_MODEL_ID": "${user_config.bedrock_text_model}",
+        "AMAZON_BEDROCK_VISION_MODEL_ID": "${user_config.bedrock_vision_model}",
+        "FIGMA_ACCESS_TOKEN": "${user_config.figma_access_token}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "a11y_take-aria-snapshot",
+      "description": "Takes an ARIA snapshot of the current page for accessibility analysis"
+    },
+    {
+      "name": "accessibility_take-ax-tree-snapshot",
+      "description": "Takes an accessibility tree snapshot of the current page"
+    },
+    {
+      "name": "content_get-as-html",
+      "description": "Gets the HTML content of the current page or a specific element"
+    },
+    {
+      "name": "content_get-as-text",
+      "description": "Gets the visible text content of the current page"
+    },
+    {
+      "name": "content_save-as-pdf",
+      "description": "Saves the current page as a PDF file"
+    },
+    {
+      "name": "content_take-screenshot",
+      "description": "Takes a screenshot of the current page or a specific element"
+    },
+    {
+      "name": "figma_compare-page-with-design",
+      "description": "Compares the current page with a Figma design using visual similarity"
+    },
+    {
+      "name": "interaction_click",
+      "description": "Clicks an element on the page"
+    },
+    {
+      "name": "interaction_drag",
+      "description": "Drags an element to a target location"
+    },
+    {
+      "name": "interaction_fill",
+      "description": "Fills out an input field"
+    },
+    {
+      "name": "interaction_hover",
+      "description": "Hovers an element on the page"
+    },
+    {
+      "name": "interaction_press-key",
+      "description": "Presses a key or key combination on the page"
+    },
+    {
+      "name": "interaction_resize-viewport",
+      "description": "Resizes the browser viewport to specified dimensions"
+    },
+    {
+      "name": "interaction_resize-window",
+      "description": "Resizes the browser window to specified dimensions"
+    },
+    {
+      "name": "interaction_select",
+      "description": "Select an element on the page with the given value"
+    },
+    {
+      "name": "interaction_scroll",
+      "description": "Scrolls the page or a specific element"
+    },
+    {
+      "name": "navigation_go-back",
+      "description": "Navigates back in the browser history"
+    },
+    {
+      "name": "navigation_go-forward",
+      "description": "Navigates forward in the browser history"
+    },
+    {
+      "name": "navigation_go-to",
+      "description": "Navigates to a specified URL"
+    },
+    {
+      "name": "navigation_reload",
+      "description": "Reloads the current page"
+    },
+    {
+      "name": "o11y_get-console-messages",
+      "description": "Retrieves console messages/logs from the browser with filtering options"
+    },
+    {
+      "name": "o11y_get-http-requests",
+      "description": "Retrieves HTTP requests from the browser with filtering options"
+    },
+    {
+      "name": "o11y_get-trace-id",
+      "description": "Gets the OpenTelemetry compatible trace id of the current session"
+    },
+    {
+      "name": "o11y_get-web-vitals",
+      "description": "Gets Core Web Vitals metrics (LCP, FID, CLS, etc.) from the page"
+    },
+    {
+      "name": "o11y_new-trace-id",
+      "description": "Generates new OpenTelemetry compatible trace id and sets it to the current session"
+    },
+    {
+      "name": "o11y_set-trace-id",
+      "description": "Sets the OpenTelemetry compatible trace id of the current session"
+    },
+    {
+      "name": "react_get-component-for-element",
+      "description": "Gets the React component information for a DOM element"
+    },
+    {
+      "name": "react_get-element-for-component",
+      "description": "Gets the DOM element for a React component"
+    },
+    {
+      "name": "run_js-in-browser",
+      "description": "Executes JavaScript code in the browser context"
+    },
+    {
+      "name": "run_js-in-sandbox",
+      "description": "Executes JavaScript code in a sandboxed Node.js environment"
+    },
+    {
+      "name": "stub_clear",
+      "description": "Clears all HTTP request stubs and mocks"
+    },
+    {
+      "name": "stub_intercept-http-request",
+      "description": "Intercepts HTTP requests matching a pattern"
+    },
+    {
+      "name": "stub_list",
+      "description": "Lists all active HTTP request stubs and mocks"
+    },
+    {
+      "name": "stub_mock-http-response",
+      "description": "Mocks HTTP responses for requests matching a pattern"
+    },
+    {
+      "name": "sync_wait-for-network-idle",
+      "description": "Waits for network activity to become idle"
+    }
+  ]
+}

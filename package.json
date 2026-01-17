@@ -44,7 +44,8 @@
     "lint:format": "prettier --config .prettierrc.json --write ./src/*.ts ./src/**/*.ts ./src/**/**/*.ts ./src/**/**/**/*.ts",
     "release:patch": "release-it --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks",
     "release:minor": "release-it minor --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks",
-    "release:major": "release-it major --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks"
+    "release:major": "release-it major --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks",
+    "mcpb:pack": "mkdir -p .mcpb && mcpb pack && mv browser-devtools-mcp.mcpb .mcpb/browser-devtools.mcpb"
   },
   "files": [
     "dist/",
@@ -53,6 +54,7 @@
     "LICENSE"
   ],
   "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
     "@opentelemetry/auto-instrumentations-web": "^0.54.0",
     "@opentelemetry/context-zone": "^2.2.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.208.0",

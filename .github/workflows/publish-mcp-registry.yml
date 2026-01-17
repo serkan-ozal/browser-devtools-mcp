@@ -1,4 +1,4 @@
-name: MCP Registry Publish
+name: Publish to MCP Registry
 
 on:
   workflow_dispatch:
