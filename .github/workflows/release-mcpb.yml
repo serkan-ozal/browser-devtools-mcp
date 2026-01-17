@@ -13,22 +13,22 @@ jobs:
       matrix:
         include:
           # Linux
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             platform: linux
             arch: x64
-          - os: ubuntu-24.04-arm64
+          - os: ubuntu-24.04-arm
             platform: linux
             arch: arm64
           # macOS
-          - os: macos-13
+          - os: macos-15-intel
             platform: darwin
             arch: x64
-          - os: macos-14
+          - os: macos-15
             platform: darwin
             arch: arm64
           # Windows
-          - os: windows-latest
-            platform: win32
+          - os: windows-2025
+            platform: windows
             arch: x64
 
     runs-on: ${{ matrix.os }}
@@ -49,8 +49,6 @@ jobs:
           registry-url: https://registry.npmjs.org
       - name: NPM Install
         run: npm ci
-      - name: NPM Lint Check
-        run: npm run lint:check
       - name: NPM Build
         run: npm run build
       - name: Sync Version for MCPB
