@@ -78,7 +78,7 @@ UI debugging guidance for AI agents:
   semantics (labels, roles, disabled state, focusability) match the visible UI.
 - Before taking screenshots or snapshots, wait for network idle to ensure page stability.
 - Use Web Vitals tool to assess performance and identify optimization opportunities.
-- For design validation, use "compare-page-with-design" to compare live page UI against Figma designs:
+- For design validation, use "figma_compare-page-with-design" to compare live page UI against Figma designs:
   - Use "semantic" MSSIM mode for comparing real data vs design data (less sensitive to text/value differences)
   - Use "raw" MSSIM mode only when expecting near pixel-identical output
   - If layout mismatch is suspected, run with fullPage=true first, then retry with a selector for the problematic region
@@ -121,7 +121,7 @@ When asked to check for UI problems, layout issues, or visual bugs, ALWAYS follo
    - Best for understanding page hierarchy and accessibility issues
    - Use in combination with AX tree snapshot for comprehensive analysis
 
-5. **Design Comparison** (if Figma design is available): Call "compare-page-with-design" tool
+5. **Design Comparison** (if Figma design is available): Call "figma_compare-page-with-design" tool
    - Compares live page UI against Figma design snapshot
    - Returns combined similarity score using multiple signals (MSSIM, image embedding, text embedding)
    - Use "semantic" mode for real data vs design data comparisons

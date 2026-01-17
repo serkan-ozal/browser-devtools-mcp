@@ -509,6 +509,10 @@ The server can be configured using environment variables:
 
 **Parameters:**
 - `key` (string, required): Key to press (e.g., "Enter", "Escape", "Tab")
+- `selector` (string, optional): CSS selector to focus before sending the key
+- `holdMs` (number, optional): Duration in milliseconds to hold the key (repeat duration if `repeat` is true)
+- `repeat` (boolean, optional, default: false): If true, simulates key auto-repeat by pressing repeatedly during `holdMs`
+- `repeatIntervalMs` (number, optional, default: 50, min: 10): Interval between repeated key presses in ms (only when `repeat` is true)
 </details>
 
 <details>
@@ -728,7 +732,7 @@ The server can be configured using environment variables:
 </details>
 
 <details>
-<summary><code>o11y-get-web-vitals</code> - Collects Web Vitals-style performance metrics and provides recommendations based on Google's thresholds.</summary>
+<summary><code>o11y_get-web-vitals</code> - Collects Web Vitals-style performance metrics and provides recommendations based on Google's thresholds.</summary>
 
 **Parameters:**
 - `waitMs` (number, optional): Optional wait duration in milliseconds before reading metrics (default: 0, max: 30000). Useful to allow LCP/INP/CLS to settle after interactions
@@ -1009,7 +1013,7 @@ The server can be configured using environment variables:
 ### Figma Tools
 
 <details>
-<summary><code>compare-page-with-design</code> - Compares the current page UI against a Figma design snapshot and returns a combined similarity score.</summary>
+<summary><code>figma_compare-page-with-design</code> - Compares the current page UI against a Figma design snapshot and returns a combined similarity score.</summary>
 
 **Parameters:**
 - `figmaFileKey` (string, required): Figma file key (the part after /file/ in Figma URL)
@@ -1200,7 +1204,7 @@ This server enables AI assistants to:
 4. Check console messages with `o11y_get-console-messages` for errors
 5. Monitor HTTP requests with `o11y_get-http-requests` to see API calls
 6. Capture accessibility snapshots with `a11y_take-aria-snapshot` and `accessibility_take-ax-tree-snapshot` to understand page structure
-7. Compare page with Figma design using `compare-page-with-design` to validate design parity
+7. Compare page with Figma design using `figma_compare-page-with-design` to validate design parity
 8. Interact with elements using `interaction_click`, `interaction_fill`, etc.
 9. Extract content using `content_get-as-html` or `content_get-as-text`
 10. Save the page as PDF using `content_save-as-pdf` for documentation

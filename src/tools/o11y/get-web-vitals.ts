@@ -358,7 +358,7 @@ function buildRecommendations(params: {
 
 export class GetWebVitals implements Tool {
     name(): string {
-        return 'o11y-get-web-vitals';
+        return 'o11y_get-web-vitals';
     }
 
     description(): string {
