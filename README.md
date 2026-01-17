@@ -632,6 +632,20 @@ The server can be configured using environment variables:
 <summary><code>navigation_go-forward</code> - Navigates forward in browser history.</summary>
 </details>
 
+<details>
+<summary><code>navigation_reload</code> - Reloads the current page.</summary>
+
+**Parameters:**
+- `timeout` (number, optional): Maximum operation time in milliseconds (default: 0 - no timeout)
+- `waitUntil` (enum, optional): When to consider navigation succeeded - "load", "domcontentloaded", "networkidle", or "commit" (default: "load")
+
+**Returns:**
+- `url` (string): Final URL after reload
+- `status` (number): HTTP status code
+- `statusText` (string): HTTP status text
+- `ok` (boolean): Whether reload was successful (2xx status)
+</details>
+
 ### Run Tools
 
 <details>
