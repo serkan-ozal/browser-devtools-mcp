@@ -1,4 +1,4 @@
-name: Release
+name: Release to NPM
 
 on:
   workflow_dispatch:
@@ -32,7 +32,7 @@ jobs:
           node-version: "18"
           registry-url: https://registry.npmjs.org
       - name: NPM Install
-        run: npm install
+        run: npm ci
       - name: NPM Lint Check
         run: npm run lint:check
       - name: NPM Build
@@ -43,13 +43,3 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
           NODE_DEBUG: release-it:*
-      - name: Sync Version for MCPB
-        run: ./scripts/mcpb-sync-version.sh
-      - name: Pack MCPB
-        run: npm run mcpb:pack
-      - name: Release MCPB
-        run: ./scripts/mcpb-release.sh
-        env:
-          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}       # gh uses this
-          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}   # fallback
-          GITHUB_REPOSITORY: ${{ github.repository }}    # owner/repo

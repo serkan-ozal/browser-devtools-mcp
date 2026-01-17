@@ -1,14 +1,28 @@
+#!/bin/bash
+set -e
+
 VERSION="$(jq -r '.version' package.json)"
 if [[ -z "$VERSION" || "$VERSION" == "null" ]]; then
   echo "❌ Error: Could not read 'version' from package.json"
   exit 1
 fi
 
-ASSET=".mcpb/browser-devtools.mcpb"
-if [[ ! -f "$ASSET" ]]; then
-  echo "❌ Error: Asset not found at $ASSET"
+MCPB_DIR="${MCPB_DIR:-.mcpb}"
+if [[ ! -d "$MCPB_DIR" ]]; then
+  echo "❌ Error: MCPB directory not found at $MCPB_DIR"
   exit 1
 fi
+
+MCPB_FILES=("$MCPB_DIR"/*.mcpb)
+if [[ ${#MCPB_FILES[@]} -eq 0 || ! -f "${MCPB_FILES[0]}" ]]; then
+  echo "❌ Error: No .mcpb files found in $MCPB_DIR"
+  exit 1
+fi
+
+echo "ℹ️ Found ${#MCPB_FILES[@]} MCPB file(s):"
+for f in "${MCPB_FILES[@]}"; do
+  echo "   - $(basename "$f")"
+done
 
 # If this job runs on a tag ref, use it; otherwise fallback to v${VERSION}
 if [[ "${GITHUB_REF:-}" == refs/tags/* ]]; then
@@ -22,8 +36,7 @@ echo "ℹ️ Using tag: ${TAG}"
 MAX_TRIES=18   # ~90s
 SLEEP_SECS=5
 i=0
-# Ensure release exists for the tag
-until gh release view "$TAG" --repo ${GITHUB_REPOSITORY} >/dev/null 2>&1; do
+until gh release view "$TAG" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; do
   i=$((i+1))
   if (( i >= MAX_TRIES )); then
     echo "❌ Release '$TAG' not visible after ${MAX_TRIES} tries."
@@ -33,7 +46,12 @@ until gh release view "$TAG" --repo ${GITHUB_REPOSITORY} >/dev/null 2>&1; do
   sleep "$SLEEP_SECS"
 done
 
-echo "ℹ️ Uploading MCPB asset to release $TAG…"
-gh release upload "$TAG" "$ASSET" --repo ${GITHUB_REPOSITORY} --clobber
+echo "✅ Release '$TAG' found"
+echo "ℹ️ Uploading MCPB assets to release $TAG…"
 
-echo "✅ Done: browser-devtools.mcpb attached to release $TAG"
+for file in "${MCPB_FILES[@]}"; do
+  echo "📦 Uploading $(basename "$file")…"
+  gh release upload "$TAG" "$file" --repo "${GITHUB_REPOSITORY}" --clobber
+done
+
+echo "✅ Done: All MCPB files attached to release $TAG"

@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 VERSION=$(jq -r '.version' package.json)
 if [[ -z "$VERSION" || "$VERSION" == "null" ]]; then
   echo "❌ Error: Could not read 'version' from package.json"

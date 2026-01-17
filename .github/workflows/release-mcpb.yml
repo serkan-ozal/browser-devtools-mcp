@@ -1,0 +1,94 @@
+name: Release MCPB
+
+on:
+  workflow_dispatch:
+
+env:
+  MCPB_NAME: browser-devtools-mcp
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+          - os: ubuntu-24.04-arm64
+            platform: linux
+            arch: arm64
+          # macOS
+          - os: macos-13
+            platform: darwin
+            arch: x64
+          - os: macos-14
+            platform: darwin
+            arch: arm64
+          # Windows
+          - os: windows-latest
+            platform: win32
+            arch: x64
+
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write # Required for creating GitHub releases
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+      - name: Configure Git User
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          registry-url: https://registry.npmjs.org
+      - name: NPM Install
+        run: npm ci
+      - name: NPM Lint Check
+        run: npm run lint:check
+      - name: NPM Build
+        run: npm run build
+      - name: Sync Version for MCPB
+        shell: bash
+        run: ./scripts/mcpb-sync-version.sh
+      - name: Pack MCPB
+        run: npm run mcpb:pack
+      - name: Rename MCPB with Platform/Arch
+        shell: bash
+        run: |
+          mkdir -p .mcpb
+          mv ${MCPB_NAME}.mcpb .mcpb/${MCPB_NAME}-${{ matrix.platform }}-${{ matrix.arch }}.mcpb
+      - name: Upload MCPB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.MCPB_NAME }}-${{ matrix.platform }}-${{ matrix.arch }}.mcpb
+          path: .mcpb/${{ env.MCPB_NAME }}-${{ matrix.platform }}-${{ matrix.arch }}.mcpb
+          retention-days: 1
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: .mcpb
+          pattern: "*.mcpb"
+          merge-multiple: true
+      - name: List Artifacts
+        run: ls -la .mcpb/
+      - name: Release MCPB
+        run: ./scripts/mcpb-release.sh
+        env:
+          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
