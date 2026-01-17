@@ -1,9 +1,6 @@
 # Browser user data (Chrome profile)
 browser-devtools-mcp/
 
-# Node modules
-node_modules/
-
 # Source files (only dist needed)
 src/
 

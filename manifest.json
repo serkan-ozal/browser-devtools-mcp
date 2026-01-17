@@ -49,6 +49,7 @@
       "type": "string",
       "title": "User Data Directory",
       "description": "Directory for persistent browser user data",
+      "default": "",
       "required": false
     },
     "browser_use_system": {
@@ -62,6 +63,7 @@
       "type": "string",
       "title": "Browser Executable Path",
       "description": "Custom path to browser executable",
+      "default": "",
       "required": false
     },
     "otel_enable": {
@@ -89,12 +91,14 @@
       "type": "string",
       "title": "OTel Exporter URL",
       "description": "OpenTelemetry collector URL (e.g., http://localhost:4318)",
+      "default": "",
       "required": false
     },
     "otel_exporter_headers": {
       "type": "string",
       "title": "OTel Exporter Headers",
       "description": "OpenTelemetry HTTP headers (key=value,key=value format)",
+      "default": "",
       "sensitive": true,
       "required": false
     },
@@ -102,12 +106,14 @@
       "type": "string",
       "title": "AWS Region",
       "description": "AWS region for Bedrock services",
+      "default": "",
       "required": false
     },
     "aws_profile": {
       "type": "string",
       "title": "AWS Profile",
       "description": "AWS profile name for credentials",
+      "default": "",
       "required": false
     },
     "bedrock_enable": {
@@ -121,24 +127,28 @@
       "type": "string",
       "title": "Bedrock Image Model",
       "description": "Amazon Bedrock model ID for image embeddings",
+      "default": "",
       "required": false
     },
     "bedrock_text_model": {
       "type": "string",
       "title": "Bedrock Text Model",
       "description": "Amazon Bedrock model ID for text embeddings",
+      "default": "",
       "required": false
     },
     "bedrock_vision_model": {
       "type": "string",
       "title": "Bedrock Vision Model",
       "description": "Amazon Bedrock model ID for vision tasks",
+      "default": "",
       "required": false
     },
     "figma_access_token": {
       "type": "string",
       "title": "Figma Access Token",
       "description": "Figma API access token for design comparison features",
+      "default": "",
       "sensitive": true,
       "required": false
     }
