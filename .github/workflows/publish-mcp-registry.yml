@@ -1,23 +1,13 @@
-name: NPM Release
+name: Publish to MCP Registry
 
 on:
   workflow_dispatch:
-    inputs:
-      version_scale:
-        type: choice
-        description: "Version scale"
-        required: true
-        default: "patch"
-        options:
-          - patch
-          - minor
-          - major
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required for creating GitHub releases
+      contents: read
       id-token: write  # Required for MCP registry OIDC authentication
     steps:
       - uses: actions/checkout@v4
@@ -38,9 +28,12 @@ jobs:
         run: npm run lint:check
       - name: NPM Build
         run: npm run build
-      - name: NPM Publish
-        run: npm run release:${{ github.event.inputs.version_scale }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-          NODE_DEBUG: release-it:*
+      - name: Install MCP Publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+      - name: Login to MCP Registry
+        run: ./mcp-publisher login github-oidc
+      - name: Sync Version for MCP Publisher
+        run: ./scripts/mcp-publisher-sync-version.sh
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish

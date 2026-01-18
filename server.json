@@ -1,0 +1,250 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.serkan-ozal/browser-devtools-mcp",
+  "description": "Playwright-powered MCP server for browser automation, debugging, and observability.",
+  "websiteUrl": "https://github.com/serkan-ozal/browser-devtools-mcp",
+  "repository": {
+    "url": "https://github.com/serkan-ozal/browser-devtools-mcp",
+    "source": "github"
+  },
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "documentationUrl": "https://github.com/serkan-ozal/browser-devtools-mcp#readme",
+      "iconUrl": "https://github.com/serkan-ozal.png",
+      "keywords": [
+        "ai",
+        "automation",
+        "browser",
+        "debugging",
+        "mcp",
+        "observability",
+        "opentelemetry",
+        "playwright",
+        "testing",
+        "web"
+      ],
+      "contacts": [
+        {
+          "name": "Serkan Ozal",
+          "email": "serkanozal86@gmail.com",
+          "url": "https://github.com/serkan-ozal"
+        }
+      ]
+    }
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://{your_mcp_server_host}/mcp",
+      "variables": {
+        "your_mcp_server_host": {
+          "description": "Your self-hosted MCP server host (host:port, without scheme).",
+          "isRequired": true
+        }
+      }
+    }
+  ],
+  "version": "{{VERSION}}",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "browser-devtools-mcp",
+      "version": "{{VERSION}}",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "Port for HTTP transport.",
+          "isRequired": false,
+          "format": "number",
+          "isSecret": false,
+          "name": "PORT"
+        },
+        {
+          "description": "Idle session timeout (seconds).",
+          "isRequired": false,
+          "format": "number",
+          "isSecret": false,
+          "name": "SESSION_IDLE_SECONDS"
+        },
+        {
+          "description": "Interval for checking idle sessions (seconds).",
+          "isRequired": false,
+          "format": "number",
+          "isSecret": false,
+          "name": "SESSION_IDLE_CHECK_SECONDS"
+        },
+        {
+          "description": "Close session when socket closes.",
+          "isRequired": false,
+          "format": "boolean",
+          "isSecret": false,
+          "name": "SESSION_CLOSE_ON_SOCKET_CLOSE"
+        },
+        {
+          "description": "Maximum console messages to buffer.",
+          "isRequired": false,
+          "format": "number",
+          "isSecret": false,
+          "name": "CONSOLE_MESSAGES_BUFFER_SIZE"
+        },
+        {
+          "description": "Maximum HTTP requests to buffer.",
+          "isRequired": false,
+          "format": "number",
+          "isSecret": false,
+          "name": "HTTP_REQUESTS_BUFFER_SIZE"
+        },
+        {
+          "description": "Run browser in headless mode.",
+          "isRequired": false,
+          "format": "boolean",
+          "isSecret": false,
+          "name": "BROWSER_HEADLESS_ENABLE"
+        },
+        {
+          "description": "Use persistent browser context (preserves cookies, localStorage, extensions).",
+          "isRequired": false,
+          "format": "boolean",
+          "isSecret": false,
+          "name": "BROWSER_PERSISTENT_ENABLE"
+        },
+        {
+          "description": "Directory for persistent browser context user data.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "BROWSER_PERSISTENT_USER_DATA_DIR"
+        },
+        {
+          "description": "Use system-installed Chrome browser instead of Playwright's bundled browser.",
+          "isRequired": false,
+          "format": "boolean",
+          "isSecret": false,
+          "name": "BROWSER_USE_INSTALLED_ON_SYSTEM"
+        },
+        {
+          "description": "Custom browser executable path.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "BROWSER_EXECUTABLE_PATH"
+        },
+        {
+          "description": "Enable OpenTelemetry integration.",
+          "isRequired": false,
+          "format": "boolean",
+          "isSecret": false,
+          "name": "OTEL_ENABLE"
+        },
+        {
+          "description": "OpenTelemetry service name.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "OTEL_SERVICE_NAME"
+        },
+        {
+          "description": "OpenTelemetry service version.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "OTEL_SERVICE_VERSION"
+        },
+        {
+          "description": "Directory containing OpenTelemetry bundle files.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "OTEL_ASSETS_DIR"
+        },
+        {
+          "description": "User interaction events to instrument (comma-separated, e.g., \"click,submit\").",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "OTEL_INSTRUMENTATION_USER_INTERACTION_EVENTS"
+        },
+        {
+          "description": "OpenTelemetry exporter type: \"otlp/http\", \"console\", or \"none\".",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "OTEL_EXPORTER_TYPE"
+        },
+        {
+          "description": "OpenTelemetry collector base URL (e.g., \"http://localhost:4318\").",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "OTEL_EXPORTER_HTTP_URL"
+        },
+        {
+          "description": "OpenTelemetry exporter HTTP headers (comma-separated key=value pairs).",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true,
+          "name": "OTEL_EXPORTER_HTTP_HEADERS"
+        },
+        {
+          "description": "AWS region for Bedrock usage.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "AWS_REGION"
+        },
+        {
+          "description": "AWS profile name for Bedrock usage.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "AWS_PROFILE"
+        },
+        {
+          "description": "Enable Amazon Bedrock usage.",
+          "isRequired": false,
+          "format": "boolean",
+          "isSecret": false,
+          "name": "AMAZON_BEDROCK_ENABLE"
+        },
+        {
+          "description": "Amazon Bedrock image embedding model ID.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "AMAZON_BEDROCK_IMAGE_EMBED_MODEL_ID"
+        },
+        {
+          "description": "Amazon Bedrock text embedding model ID.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "AMAZON_BEDROCK_TEXT_EMBED_MODEL_ID"
+        },
+        {
+          "description": "Amazon Bedrock vision model ID.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "AMAZON_BEDROCK_VISION_MODEL_ID"
+        },
+        {
+          "description": "Figma API access token for design comparison.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true,
+          "name": "FIGMA_ACCESS_TOKEN"
+        },
+        {
+          "description": "Figma API base URL.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false,
+          "name": "FIGMA_API_BASE_URL"
+        }
+      ]
+    }
+  ]
+}

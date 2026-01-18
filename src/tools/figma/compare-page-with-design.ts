@@ -103,7 +103,7 @@ export interface ComparePageWithDesignOutput extends ToolOutput {
 
 export class ComparePageWithDesign implements Tool {
     name(): string {
-        return 'compare-page-with-design';
+        return 'figma_compare-page-with-design';
     }
 
     description(): string {

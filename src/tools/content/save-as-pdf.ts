@@ -18,7 +18,7 @@ import path from 'path';
 import { z } from 'zod';
 
 export enum SizeUnit {
-    PIXED = 'px',
+    PIXEL = 'px',
     INCH = 'in',
     CENTIMETER = 'cm',
     MILLIMETER = 'mm',

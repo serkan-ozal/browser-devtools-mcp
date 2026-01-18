@@ -78,12 +78,10 @@ function _toResponse(response: ToolOutput): CallToolResult {
     };
 }
 
-export async function createServer(
-    transport: Transport,
-    opts: {
-        config?: McpServerConfig;
-    }
-): Promise<McpServer> {
+export function createServer(opts: {
+    config?: McpServerConfig;
+    sessionIdProvider?: () => string;
+}): McpServer {
     const server: McpServer = new McpServer(
         {
             name: SERVER_NAME,
@@ -120,8 +118,8 @@ export async function createServer(
         })
     );
 
-    const toolExecutor: ToolExecutor = new ToolExecutor(
-        (): string => transport.sessionId as string
+    const toolExecutor: ToolExecutor = new ToolExecutor((): string =>
+        opts.sessionIdProvider ? opts.sessionIdProvider() : ''
     );
 
     const createToolCallback = (tool: Tool) => {
@@ -151,9 +149,23 @@ export async function createServer(
                 description: t.description(),
                 inputSchema: t.inputSchema(),
                 outputSchema: t.outputSchema(),
-            },
-            createToolCallback(t)
+            } as any,
+            createToolCallback(t) as any
         );
+    });
+
+    return server;
+}
+
+export async function createAndConnectServer(
+    transport: Transport,
+    opts: {
+        config?: McpServerConfig;
+    }
+): Promise<McpServer> {
+    const server: McpServer = createServer({
+        config: opts.config,
+        sessionIdProvider: (): string => transport.sessionId as string,
     });
 
     await server.connect(transport);

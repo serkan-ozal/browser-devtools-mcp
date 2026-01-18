@@ -1,6 +1,6 @@
 {
   "name": "browser-devtools-mcp",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "MCP Server for Browser Dev Tools",
   "private": false,
   "type": "commonjs",
@@ -13,7 +13,10 @@
   },
   "author": "Serkan Ozal <serkanozal86@gmail.com> (https://github.com/serkan-ozal)",
   "homepage": "https://github.com/serkan-ozal/browser-devtools-mcp",
-  "repository": "serkan-ozal/browser-devtools-mcp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/serkan-ozal/browser-devtools-mcp.git"
+  },
   "license": "MIT",
   "keywords": [
     "ai",
@@ -26,6 +29,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "mcpName": "io.github.serkan-ozal/browser-devtools-mcp",
   "scripts": {
     "clean": "rimraf dist",
     "build:otel": "node scripts/build-otel.mjs",
@@ -40,7 +44,8 @@
     "lint:format": "prettier --config .prettierrc.json --write ./src/*.ts ./src/**/*.ts ./src/**/**/*.ts ./src/**/**/**/*.ts",
     "release:patch": "release-it --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks",
     "release:minor": "release-it minor --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks",
-    "release:major": "release-it major --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks"
+    "release:major": "release-it major --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks",
+    "mcpb:pack": "mcpb pack"
   },
   "files": [
     "dist/",
@@ -49,6 +54,7 @@
     "LICENSE"
   ],
   "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
     "@opentelemetry/auto-instrumentations-web": "^0.54.0",
     "@opentelemetry/context-zone": "^2.2.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.208.0",
@@ -82,6 +88,7 @@
     "playwright": "^1.57.0",
     "pngjs": "^7.0.0",
     "sharp": "^0.34.5",
-    "ssim.js": "^3.5.0"
+    "ssim.js": "^3.5.0",
+    "zod": "^3.24.3"
   }
 }
