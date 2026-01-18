@@ -1223,6 +1223,71 @@ This server enables AI assistants to:
 9. Extract content using `content_get-as-html` or `content_get-as-text`
 10. Save the page as PDF using `content_save-as-pdf` for documentation
 
+## Plugins
+
+Browser DevTools MCP is available as a plugin for various AI coding assistants.
+
+### Claude Code
+
+A dedicated Claude Code plugin is available with slash commands, skills, and agents for browser automation and testing.
+
+#### Installation
+
+```bash
+# Add the marketplace
+/plugin marketplace add https://github.com/serkan-ozal/browser-devtools-mcp
+
+# Install the plugin
+/plugin install browser-devtools-mcp@browser-devtools
+```
+
+#### Features
+
+**Slash Commands (29 commands):**
+- Navigation: `/browse`, `/back`, `/forward`, `/reload`
+- Content: `/screenshot`, `/html`, `/text`, `/pdf`
+- Interaction: `/click`, `/fill`, `/hover`, `/keypress`, `/select`, `/drag`, `/scroll`, `/resize`
+- Debugging: `/console`, `/network`, `/webvitals`, `/react`
+- Observability: `/trace`, `/otel`
+- Testing: `/mock`, `/intercept`, `/wait`
+- Accessibility: `/accessibility`
+- Design: `/figma`
+- Execution: `/run-js`, `/sandbox`
+
+**Skills (5 skills):**
+- `browser-testing` - General browser test capabilities
+- `web-debugging` - Console, network, JS debugging
+- `performance-audit` - Web Vitals and performance analysis
+- `visual-testing` - Visual testing and responsive design
+- `observability` - Distributed tracing and monitoring
+
+**Agents (5 agents):**
+- `qa-tester` - Automated QA testing agent
+- `accessibility-auditor` - WCAG compliance auditor
+- `performance-analyzer` - Performance analysis agent
+- `scraper` - Web scraping agent
+- `design-qa` - Figma design QA agent
+
+#### Configuration
+
+The plugin can be configured via environment variables. See [CONFIG.md](plugins/claude/CONFIG.md) for all available options.
+
+Example configuration in `~/.claude/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "browser-devtools": {
+      "command": "npx",
+      "args": ["-y", "browser-devtools-mcp@latest"],
+      "env": {
+        "BROWSER_HEADLESS_ENABLE": "false"
+      }
+    }
+  }
+}
+```
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
