@@ -13,6 +13,10 @@ src/
 .github/
 .gitignore
 
+# Claude Code Plugin (separate distribution)
+.claude-plugin/
+plugins/
+
 # IDE
 .vscode/
 .idea/
@@ -28,6 +32,7 @@ __tests__/
 tsconfig.json
 .prettierrc.json
 .eslintrc.json
+.release-it.json
 smithery.yaml
 smithery.config.ts
 pnpm-workspace.yaml

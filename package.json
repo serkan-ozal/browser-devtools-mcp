@@ -42,9 +42,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint:check": "prettier --config .prettierrc.json --check ./src/*.ts ./src/**/*.ts ./src/**/**/*.ts ./src/**/**/**/*.ts",
     "lint:format": "prettier --config .prettierrc.json --write ./src/*.ts ./src/**/*.ts ./src/**/**/*.ts ./src/**/**/**/*.ts",
-    "release:patch": "release-it --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks",
-    "release:minor": "release-it minor --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks",
-    "release:major": "release-it major --ci -VV --git.commit --git.push --git.tag --git.tagName='v${version}' --github.release --github.releaseNotes='echo \"Release ${version}\"' --no-git.requireCleanWorkingDir --no-git.requireUpstream --npm.publish --npm.skipChecks",
+    "release:patch": "release-it --ci -VV",
+    "release:minor": "release-it minor --ci -VV",
+    "release:major": "release-it major --ci -VV",
     "mcpb:pack": "mcpb pack"
   },
   "files": [

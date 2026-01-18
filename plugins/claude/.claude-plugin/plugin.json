@@ -1,0 +1,13 @@
+{
+  "name": "browser-devtools-mcp",
+  "version": "0.1.3",
+  "description": "Browser DevTools MCP - Playwright-powered browser automation for Claude Code",
+  "author": {
+    "name": "Serkan Ozal",
+    "email": "serkanozal86@gmail.com",
+    "url": "https://github.com/serkan-ozal"
+  },
+  "homepage": "https://github.com/serkan-ozal/browser-devtools-mcp",
+  "repository": "https://github.com/serkan-ozal/browser-devtools-mcp",
+  "license": "MIT"
+}

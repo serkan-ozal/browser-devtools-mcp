@@ -33,7 +33,7 @@ jobs:
           curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
       - name: Login to MCP Registry
         run: ./mcp-publisher login github-oidc
-      - name: Sync Version for MCP Publisher
-        run: ./scripts/mcp-publisher-sync-version.sh
+      - name: Sync Versions
+        run: ./scripts/sync-versions.sh
       - name: Publish to MCP Registry
         run: ./mcp-publisher publish

@@ -51,9 +51,9 @@ jobs:
         run: npm ci
       - name: NPM Build
         run: npm run build
-      - name: Sync Version for MCPB
+      - name: Sync Versions
         shell: bash
-        run: ./scripts/mcpb-sync-version.sh
+        run: ./scripts/sync-versions.sh
       - name: Pack MCPB
         run: npm run mcpb:pack
       - name: Rename MCPB with Platform/Arch
