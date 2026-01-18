@@ -82,7 +82,7 @@
     "@playwright/browser-firefox": "^1.57.0",
     "@playwright/browser-webkit": "^1.57.0",
     "commander": "^14.0.1",
-    "hono": "^4.9.9",
+    "hono": "^4.11.4",
     "jpeg-js": "^0.4.4",
     "picomatch": "^4.0.3",
     "playwright": "^1.57.0",
