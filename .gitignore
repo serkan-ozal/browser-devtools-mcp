@@ -136,6 +136,9 @@ dist
 .pnp.*
 
 .idea
+
+.DS_Store
+
 .mcpb
 .smithery
 browser-devtools-mcp

@@ -189,6 +189,12 @@ Then add the configuration:
 
 Replace `<SERVER_URL>` with your server URL (e.g., `http://localhost:3000/mcp` if running locally, or `https://your-server.com/mcp` if hosted remotely).
 
+
+:white_check_mark: Be sure that browser-devtools is enabled in Cursor Tools & MCP settings.
+![Cursor Tools & MCP Setting](img/cursor-mcp-settings.png)
+
+
+
 ### VS Code
 
 Add the following configuration into the `.vscode/mcp.json` file.
