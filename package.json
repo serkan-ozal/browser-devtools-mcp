@@ -51,6 +51,7 @@
     "dist/",
     "package.json",
     "README.md",
+    "SECURITY.md",
     "LICENSE"
   ],
   "devDependencies": {
