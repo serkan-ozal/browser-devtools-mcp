@@ -1,10 +1,18 @@
-# Browser DevTools MCP
+<p align="center">
+  <img src="public/icon.svg" alt="Browser DevTools MCP" width="128" height="128">
+  <br>
+  <strong style="font-size: 2em;">Browser DevTools MCP</strong>
+</p>
 
-![Build Status](https://github.com/serkan-ozal/browser-devtools-mcp/actions/workflows/build.yml/badge.svg)
-![NPM Version](https://badge.fury.io/js/browser-devtools-mcp.svg)
-![License](https://img.shields.io/badge/license-MIT-blue)
+<p align="center">
+  <a href="https://github.com/serkan-ozal/browser-devtools-mcp/actions/workflows/build.yml"><img src="https://github.com/serkan-ozal/browser-devtools-mcp/actions/workflows/build.yml/badge.svg" alt="Build Status"></a>
+  <a href="https://www.npmjs.com/package/browser-devtools-mcp"><img src="https://badge.fury.io/js/browser-devtools-mcp.svg" alt="NPM Version"></a>
+  <a href="https://github.com/serkan-ozal/browser-devtools-mcp/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License"></a>
+</p>
 
-A powerful [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that provides AI coding assistants with comprehensive browser automation and debugging capabilities using Playwright. This server enables both **execution-level debugging** (logs, network requests) and **visual debugging** (screenshots, ARIA snapshots) to help AI assistants understand and interact with web pages effectively.
+<p align="center">
+A powerful <a href="https://modelcontextprotocol.io">Model Context Protocol (MCP)</a> server that provides AI coding assistants with comprehensive browser automation and debugging capabilities using Playwright. This server enables both <strong>execution-level debugging</strong> (logs, network requests) and <strong>visual debugging</strong> (screenshots, ARIA snapshots) to help AI assistants understand and interact with web pages effectively.
+</p>
 
 ## Overview
 

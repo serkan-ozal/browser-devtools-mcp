@@ -3,6 +3,17 @@
   "name": "io.github.serkan-ozal/browser-devtools-mcp",
   "description": "Playwright-powered MCP server for browser automation, debugging, and observability.",
   "websiteUrl": "https://github.com/serkan-ozal/browser-devtools-mcp",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/serkan-ozal/browser-devtools-mcp/main/public/icon.png",
+      "mimeType": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/serkan-ozal/browser-devtools-mcp/main/public/icon.svg",
+      "mimeType": "image/svg+xml",
+      "sizes": ["any"]
+    }
+  ],
   "repository": {
     "url": "https://github.com/serkan-ozal/browser-devtools-mcp",
     "source": "github"
@@ -10,7 +21,6 @@
   "_meta": {
     "io.modelcontextprotocol.registry/publisher-provided": {
       "documentationUrl": "https://github.com/serkan-ozal/browser-devtools-mcp#readme",
-      "iconUrl": "https://github.com/serkan-ozal.png",
       "keywords": [
         "ai",
         "automation",

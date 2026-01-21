@@ -139,3 +139,4 @@ dist
 .mcpb
 .smithery
 browser-devtools-mcp
+.DS_Store
