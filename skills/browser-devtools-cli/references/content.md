@@ -6,6 +6,10 @@ Content extraction and capture commands.
 
 Take a screenshot of the current page or a specific element.
 
+The screenshot is always saved to the file system and the file path is returned.
+By default, the image data is NOT included in the response to reduce payload size.
+Use `--include-base64` when the AI assistant cannot access the MCP server's file system.
+
 ```bash
 browser-devtools-cli content take-screenshot [options]
 ```
@@ -20,11 +24,17 @@ browser-devtools-cli content take-screenshot [options]
 | `--full-page` | boolean | No | `false` | Capture full scrollable page |
 | `--type` | enum | No | `png` | Image format: `png` or `jpeg` |
 | `--quality` | number | No | `100` | JPEG quality (0-100, ignored for PNG) |
+| `--include-base64` | boolean | No | `false` | Include image data in response (for remote MCP servers) |
+
+**When to use `--include-base64`:**
+- Remote MCP server (different machine)
+- Containerized/sandboxed environment
+- AI assistant cannot access the file system where MCP server runs
 
 **Examples:**
 
 ```bash
-# Basic screenshot
+# Basic screenshot (file path only)
 browser-devtools-cli content take-screenshot --name "homepage"
 
 # Full page screenshot
@@ -39,15 +49,30 @@ browser-devtools-cli content take-screenshot --type jpeg --quality 80 --name "co
 # Custom output path
 browser-devtools-cli content take-screenshot --output-path "/tmp/screenshots" --name "test"
 
+# Include image data in response (for remote access)
+browser-devtools-cli --json content take-screenshot --name "test" --include-base64
+
 # JSON output for parsing file path
 browser-devtools-cli --json content take-screenshot --name "test"
 ```
 
-**Output (JSON):**
+**Output (JSON) - Default (without `--include-base64`):**
 
 ```json
 {
   "filePath": "/tmp/screenshot-20240115-143022.png"
+}
+```
+
+**Output (JSON) - With `--include-base64`:**
+
+```json
+{
+  "filePath": "/tmp/screenshot-20240115-143022.png",
+  "image": {
+    "data": "<base64-encoded-image-data>",
+    "mimeType": "image/png"
+  }
 }
 ```
 

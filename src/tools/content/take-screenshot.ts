@@ -32,9 +32,10 @@ export interface TakeScreenshotInput extends ToolInput {
     fullPage?: boolean;
     type?: ScreenshotType;
     quality?: number;
+    includeBase64?: boolean;
 }
 
-export interface TakeScreenshotOutput extends ToolOutputWithImage {
+export interface TakeScreenshotOutput extends Partial<ToolOutputWithImage> {
     filePath: string;
 }
 
@@ -50,7 +51,12 @@ export class TakeScreenshot implements Tool {
     }
 
     description(): string {
-        return 'Takes a screenshot of the current page or a specific element.';
+        return `Takes a screenshot of the current page or a specific element.
+The screenshot is always saved to the file system and the file path is returned.
+By default, the image data is NOT included in the response to reduce payload size.
+If the AI assistant cannot access the MCP server's file system (e.g., remote MCP server, 
+containerized environment, or different machine), set "includeBase64" to true to receive 
+the image data directly in the response.`;
     }
 
     inputSchema(): ToolInputSchema {
@@ -99,6 +105,17 @@ export class TakeScreenshot implements Tool {
                     'The quality of the image, between 0-100. Not applicable to png images.'
                 )
                 .optional(),
+            includeBase64: z
+                .boolean()
+                .describe(
+                    'If true, includes the screenshot image data (base64-encoded) in the response. ' +
+                        'Default is false since the file path is usually sufficient when the AI assistant ' +
+                        'can access the MCP server file system. Set to true when the AI assistant cannot ' +
+                        'access the file system where the MCP server runs (e.g., remote server, container, ' +
+                        'or different machine) and needs to receive the image directly in the response.'
+                )
+                .optional()
+                .default(false),
         };
     }
 
@@ -107,6 +124,15 @@ export class TakeScreenshot implements Tool {
             filePath: z
                 .string()
                 .describe('Full path of the saved screenshot file.'),
+            image: z
+                .object({
+                    data: z.any().describe('Base64-encoded image data.'),
+                    mimeType: z.string().describe('MIME type of the image.'),
+                })
+                .optional()
+                .describe(
+                    'Image data included only when "includeBase64" input parameter is set to true.'
+                ),
         };
     }
 
@@ -366,12 +392,18 @@ export class TakeScreenshot implements Tool {
         const screenshot: Buffer<ArrayBufferLike> =
             await context.page.screenshot(options);
 
-        return {
+        const result: TakeScreenshotOutput = {
             filePath,
-            image: {
+        };
+
+        // Only include image data if explicitly requested
+        if (args.includeBase64) {
+            result.image = {
                 data: this._scaleImageToFitMessage(screenshot, screenshotType),
                 mimeType: `image/${screenshotType}`,
-            },
-        };
+            };
+        }
+
+        return result;
     }
 }
