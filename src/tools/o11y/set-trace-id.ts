@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -37,7 +37,7 @@ export class SetTraceId implements Tool {
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: SetTraceIdInput
     ): Promise<SetTraceIdOutput> {
         await context.setTraceId(args.traceId);

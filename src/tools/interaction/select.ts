@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -40,7 +40,7 @@ export class Select implements Tool {
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: SelectInput
     ): Promise<SelectOutput> {
         const element: ElementHandle = await context.page.waitForSelector(

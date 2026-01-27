@@ -1,6 +1,6 @@
 import { BrowserContextInfo, newBrowserContext, newPage } from '../browser';
 import { OTEL_ENABLE } from '../config';
-import { McpSessionContext } from '../context';
+import { ToolSessionContext } from '../context';
 import * as logger from '../logger';
 import { Tool, ToolInput, ToolOutput } from './types';
 
@@ -8,19 +8,19 @@ import type { Page } from 'playwright';
 
 export class ToolExecutor {
     private readonly sessionIdProvider: () => string;
-    private sessionContext?: McpSessionContext;
+    private sessionContext?: ToolSessionContext;
 
     constructor(sessionIdProvider: () => string) {
         this.sessionIdProvider = sessionIdProvider;
     }
 
-    private async _createSessionContext(): Promise<McpSessionContext> {
+    private async _createSessionContext(): Promise<ToolSessionContext> {
         const browserContextInfo: BrowserContextInfo =
             await newBrowserContext();
         const page: Page = await newPage(browserContextInfo.browserContext);
         const sessionId: string = this.sessionIdProvider();
 
-        const context: McpSessionContext = new McpSessionContext(
+        const context: ToolSessionContext = new ToolSessionContext(
             sessionId,
             browserContextInfo.browserContext,
             page,
@@ -34,7 +34,7 @@ export class ToolExecutor {
         return context;
     }
 
-    private async _sessionContext(): Promise<McpSessionContext> {
+    private async _sessionContext(): Promise<ToolSessionContext> {
         if (!this.sessionContext) {
             this.sessionContext = await this._createSessionContext();
             logger.debug(
@@ -49,7 +49,7 @@ export class ToolExecutor {
             `Executing tool ${tool.name()} with input: ${logger.toJson(args)}`
         );
         try {
-            const sessionContext: McpSessionContext =
+            const sessionContext: ToolSessionContext =
                 await this._sessionContext();
             const result: ToolOutput = await tool.handle(sessionContext, args);
             logger.debug(

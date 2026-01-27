@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -127,7 +127,7 @@ Notes:
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: ResizeViewportInput
     ): Promise<ResizeViewportOutput> {
         await context.page.setViewportSize({

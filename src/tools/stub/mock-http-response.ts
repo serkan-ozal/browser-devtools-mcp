@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     addMockHttpResponseStub,
     ensureRoutingInstalled,
@@ -179,7 +179,7 @@ Notes:
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: MockHttpResponseInput
     ): Promise<MockHttpResponseOutput> {
         await ensureRoutingInstalled(context.browserContext);

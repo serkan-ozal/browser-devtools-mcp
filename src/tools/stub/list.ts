@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -80,7 +80,7 @@ Useful to debug why certain calls are being mocked/intercepted.
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: ListInput
     ): Promise<ListOutput> {
         const stubs: Array<AnyStub> = listStubs(context.browserContext);

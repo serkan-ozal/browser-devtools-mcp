@@ -24,13 +24,13 @@ import {
     Response,
 } from 'playwright';
 
-export type McpSessionContextOptions = {
+export type ToolSessionContextOptions = {
     otelEnable: boolean;
 };
 
-export class McpSessionContext {
+export class ToolSessionContext {
     private readonly _sessionId: string;
-    private readonly options: McpSessionContextOptions;
+    private readonly options: ToolSessionContextOptions;
     private readonly otelController: OTELController;
     private readonly consoleMessages: ConsoleMessage[] = [];
     private readonly httpRequests: HttpRequest[] = [];
@@ -46,7 +46,7 @@ export class McpSessionContext {
         sessionId: string,
         browserContext: BrowserContext,
         page: Page,
-        options: McpSessionContextOptions
+        options: ToolSessionContextOptions
     ) {
         this._sessionId = sessionId;
         this.browserContext = browserContext;
@@ -64,7 +64,7 @@ export class McpSessionContext {
             throw new Error('Session context is already initialized');
         }
 
-        const me: McpSessionContext = this;
+        const me: ToolSessionContext = this;
 
         let consoleMessageSequenceNumber: number = 0;
         this.page.on('console', (msg: PlaywrightConsoleMessage): void => {
@@ -328,7 +328,7 @@ export class McpSessionContext {
         }
 
         logger.debug(
-            `Closing OTEL controller of the MCP session with id ${this._sessionId} ...`
+            `Closing OTEL controller of the session with id ${this._sessionId} ...`
         );
         await this.otelController.close();
 
@@ -336,12 +336,12 @@ export class McpSessionContext {
 
         try {
             logger.debug(
-                `Closing browser context of the MCP session with id ${this._sessionId} ...`
+                `Closing browser context of the session with id ${this._sessionId} ...`
             );
             await closeBrowserContext(this.browserContext);
         } catch (err: any) {
             logger.debug(
-                `Error occurred while closing browser context of the MCP session with id ${this._sessionId} ...`,
+                `Error occurred while closing browser context of the session with id ${this._sessionId} ...`,
                 err
             );
         }
@@ -349,7 +349,7 @@ export class McpSessionContext {
         this.consoleMessages.length = 0;
         this.httpRequests.length = 0;
 
-        // We are not closing browser here as it is shared between sessions, so it should be closed on MCP server close/shutdown
+        // We are not closing browser here as it is shared between sessions, so it should be closed on server close/shutdown
 
         this.closed = true;
 

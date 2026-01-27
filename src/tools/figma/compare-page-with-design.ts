@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -271,7 +271,7 @@ This tool is designed for UI regression checks, design parity checks, and "does 
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: ComparePageWithDesignInput
     ): Promise<ComparePageWithDesignOutput> {
         const pageUrl: string = String(context.page.url());

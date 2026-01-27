@@ -6,7 +6,8 @@
   "type": "commonjs",
   "main": "./dist/index.js",
   "bin": {
-    "browser-devtools": "./dist/index.js"
+    "browser-devtools-mcp": "./dist/index.js",
+    "browser-devtools-cli": "./dist/cli.js"
   },
   "exports": {
     ".": "./dist/server.js"
@@ -36,6 +37,7 @@
     "build": "tsc && npm run build:otel",
     "start": "ts-node ./src/index.ts",
     "start:http": "ts-node ./src/index.ts --transport=streamable-http",
+    "start:daemon": "ts-node ./src/daemon-server.ts",
     "watch": "tsc --watch",
     "inspector": "npm run build && chmod 755 './dist/index.js' && npx @modelcontextprotocol/inspector dist/index.js",
     "inspector:http": "npx @modelcontextprotocol/inspector http://localhost:3000/mcp --transport http",

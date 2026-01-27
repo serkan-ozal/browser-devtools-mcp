@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -229,7 +229,7 @@ number than the last one received.`),
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: GetHttpRequestsInput
     ): Promise<GetHttpRequestsOutput> {
         const filteredHttpRequests: HttpRequest[] = context
