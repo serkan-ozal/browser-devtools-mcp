@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -325,7 +325,7 @@ What to expect (important for AI debugging):
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: GetComponentForElementInput
     ): Promise<GetComponentForElementOutput> {
         const selector: string | undefined =

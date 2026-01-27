@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -95,7 +95,7 @@ When to consider operation succeeded, defaults to \`load\`. Events can be either
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: ReloadInput
     ): Promise<ReloadOutput> {
         const response: Response | null = await context.page.reload({

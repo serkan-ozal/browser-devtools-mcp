@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -703,7 +703,7 @@ Important notes for AI-driven UI debugging:
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: TakeAxTreeSnapshotInput
     ): Promise<TakeAxTreeSnapshotOutput> {
         const page: any = context.page;

@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -240,7 +240,7 @@ Use this tool to:
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: ScrollInput
     ): Promise<ScrollOutput> {
         const mode: 'by' | 'to' | 'top' | 'bottom' | 'left' | 'right' =

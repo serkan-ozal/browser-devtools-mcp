@@ -393,6 +393,526 @@ npx -y browser-devtools-mcp --transport=streamable-http --port=3000
 npx -y @modelcontextprotocol/inspector http://localhost:3000/mcp --transport http
 ```
 
+## CLI Tool
+
+Browser DevTools MCP includes a standalone CLI tool (`browser-devtools-cli`) for direct command-line access to browser automation capabilities. This is particularly useful for:
+
+- **Scripting and automation**: Use in shell scripts, CI/CD pipelines, or automated workflows
+- **Session-based testing**: Maintain browser state across multiple commands with session IDs
+- **Skill-based workflows**: Build reusable automation sequences
+
+### Installation
+
+The CLI is included with the npm package:
+
+```bash
+# Run directly with npx
+npx -y browser-devtools-mcp browser-devtools-cli --help
+
+# Or install globally
+npm install -g browser-devtools-mcp
+browser-devtools-cli --help
+```
+
+### Global Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--port <number>` | Daemon server port | `2020` |
+| `--session-id <string>` | Session ID for maintaining browser state across commands | (none) |
+| `--json` | Output results as JSON | `false` |
+| `--quiet` | Suppress log messages, only show output | `false` |
+| `--verbose` | Enable verbose/debug output for troubleshooting | `false` |
+| `--timeout <ms>` | Timeout for operations in milliseconds | `30000` |
+
+### Browser Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--headless` / `--no-headless` | Run browser in headless (no visible window) or headful mode | `true` |
+| `--persistent` / `--no-persistent` | Use persistent browser context (preserves cookies, localStorage) | `false` |
+| `--user-data-dir <path>` | Directory for persistent browser context user data | `./browser-devtools-mcp` |
+| `--use-system-browser` | Use system-installed Chrome instead of bundled browser | `false` |
+| `--browser-path <path>` | Custom browser executable path | (none) |
+
+**Note:** Browser options are applied when the daemon server starts. If the daemon is already running, stop it first (`daemon stop`) then start with new options.
+
+### Commands
+
+The CLI organizes tools into domain-based subcommands:
+
+```
+browser-devtools-cli
+├── daemon                    # Manage the daemon server
+│   ├── start                 # Start the daemon server
+│   ├── stop                  # Stop the daemon server
+│   ├── restart               # Restart the daemon server (stop + start)
+│   ├── status                # Check daemon server status
+│   └── info                  # Get detailed daemon info (version, uptime, sessions)
+├── session                   # Manage browser sessions
+│   ├── list                  # List all active sessions
+│   ├── info <session-id>     # Get information about a session
+│   └── delete <session-id>   # Delete a specific session
+├── tools                     # Inspect available tools
+│   ├── list                  # List all tools (with --domain filter)
+│   ├── info <tool-name>      # Get detailed tool info and parameters
+│   └── search <query>        # Search tools by name or description
+├── config                    # Show current configuration
+├── completion                # Generate shell completion scripts
+│   ├── bash                  # Generate bash completion script
+│   └── zsh                   # Generate zsh completion script
+├── interactive (repl)        # Start interactive REPL mode
+├── update                    # Check for and install updates
+├── navigation                # Navigation commands
+│   ├── go-to                 # Navigate to a URL
+│   ├── go-back               # Navigate backward
+│   ├── go-forward            # Navigate forward
+│   └── reload                # Reload the page
+├── content                   # Content extraction commands
+│   ├── take-screenshot       # Take a screenshot
+│   ├── get-as-html           # Get HTML content
+│   ├── get-as-text           # Get text content
+│   └── save-as-pdf           # Save as PDF
+├── interaction               # Interaction commands
+│   ├── click                 # Click an element
+│   ├── fill                  # Fill a form field
+│   ├── hover                 # Hover over an element
+│   ├── press-key             # Press a keyboard key
+│   ├── select                # Select from dropdown
+│   ├── drag                  # Drag and drop
+│   ├── scroll                # Scroll the page
+│   ├── resize-viewport       # Resize viewport
+│   └── resize-window         # Resize browser window
+├── a11y                      # Accessibility commands
+│   └── take-aria-snapshot    # Take ARIA snapshot
+├── accessibility             # Extended accessibility commands
+│   └── take-ax-tree-snapshot # Take AX tree snapshot
+├── o11y                      # Observability commands
+│   ├── get-console-messages  # Get console logs
+│   ├── get-http-requests     # Get HTTP requests
+│   ├── get-web-vitals        # Get Web Vitals metrics
+│   ├── get-trace-id          # Get current trace ID
+│   ├── new-trace-id          # Generate new trace ID
+│   └── set-trace-id          # Set trace ID
+├── react                     # React debugging commands
+│   ├── get-component-for-element
+│   └── get-element-for-component
+├── run                       # Script execution commands
+│   ├── js-in-browser         # Run JS in browser
+│   └── js-in-sandbox         # Run JS in sandbox
+├── stub                      # HTTP stubbing commands
+│   ├── mock-http-response    # Mock HTTP responses
+│   ├── intercept-http-request # Intercept requests
+│   ├── list                  # List stubs
+│   └── clear                 # Clear stubs
+├── sync                      # Synchronization commands
+│   └── wait-for-network-idle # Wait for network idle
+└── figma                     # Figma integration commands
+    └── compare-page-with-design
+```
+
+### Usage Examples
+
+#### Basic Navigation and Screenshot
+
+```bash
+# Navigate to a URL
+browser-devtools-cli navigation go-to --url "https://example.com"
+
+# Take a screenshot
+browser-devtools-cli content take-screenshot --name "homepage"
+```
+
+#### Browser Options
+
+Configure browser behavior when starting the daemon:
+
+```bash
+# Run browser in headful mode (visible window)
+browser-devtools-cli --no-headless navigation go-to --url "https://example.com"
+
+# Use persistent browser context
+browser-devtools-cli --persistent --user-data-dir ./my-profile navigation go-to --url "https://example.com"
+
+# Use system Chrome instead of bundled Chromium
+browser-devtools-cli --use-system-browser navigation go-to --url "https://example.com"
+
+# Use a custom browser executable
+browser-devtools-cli --browser-path /path/to/chrome navigation go-to --url "https://example.com"
+```
+
+#### Session-Based Workflow
+
+Maintain browser state across multiple commands using session IDs:
+
+```bash
+# Start a session and navigate
+browser-devtools-cli --session-id my-session navigation go-to --url "https://example.com"
+
+# Interact with the page (same session)
+browser-devtools-cli --session-id my-session interaction click --selector "button.login"
+
+# Fill a form
+browser-devtools-cli --session-id my-session interaction fill --selector "#username" --value "user@example.com"
+
+# Take a screenshot
+browser-devtools-cli --session-id my-session content take-screenshot --name "after-login"
+
+# Clean up session when done
+browser-devtools-cli session delete my-session
+```
+
+#### JSON Output for Scripting
+
+Use `--json` and `--quiet` flags for machine-readable output:
+
+```bash
+# Get page content as JSON
+browser-devtools-cli --json --quiet --session-id test navigation go-to --url "https://api.example.com"
+
+# Output:
+# {
+#   "url": "https://api.example.com/",
+#   "status": 200,
+#   "statusText": "",
+#   "ok": true
+# }
+```
+
+#### Daemon Management
+
+```bash
+# Check daemon status
+browser-devtools-cli daemon status
+
+# Start daemon manually
+browser-devtools-cli daemon start
+
+# Stop daemon
+browser-devtools-cli daemon stop
+
+# Restart daemon (useful when changing browser options)
+browser-devtools-cli daemon restart
+
+# Check status with JSON output
+browser-devtools-cli daemon status --json
+# Output: {"status":"running","port":2020}
+
+# Get detailed daemon information
+browser-devtools-cli daemon info
+# Output:
+# Daemon Server Information:
+#   Version:       0.5.0
+#   Port:          2020
+#   Uptime:        5m 23s
+#   Sessions:      2
+```
+
+#### Session Management
+
+```bash
+# List all active sessions
+browser-devtools-cli session list
+# Output:
+# Active Sessions (2):
+#   my-session
+#     Created:     2025-01-26T10:00:00.000Z
+#     Last Active: 2025-01-26T10:05:30.000Z
+#     Idle:        30s
+#   #default
+#     Created:     2025-01-26T09:55:00.000Z
+#     Last Active: 2025-01-26T10:04:00.000Z
+#     Idle:        1m 30s
+
+# Get info about a specific session
+browser-devtools-cli session info my-session
+
+# Delete a session
+browser-devtools-cli session delete my-session
+```
+
+#### Tool Discovery
+
+```bash
+# List all available tools
+browser-devtools-cli tools list
+# Output:
+# Available Tools (35 total):
+#
+#   navigation:
+#     go-to                          Navigate the browser to the given URL...
+#     go-back                        Navigate back in browser history
+#     ...
+
+# Filter tools by domain
+browser-devtools-cli tools list --domain interaction
+
+# Search for tools by keyword
+browser-devtools-cli tools search click
+# Output:
+# Tools matching "click" (2 found):
+#
+#   interaction/click
+#     Clicks an element on the page.
+#   ...
+
+# Get detailed info about a specific tool
+browser-devtools-cli tools info navigation_go-to
+# Output:
+# Tool: navigation_go-to
+# Domain: navigation
+#
+# Description:
+#   Navigate the browser to the given URL...
+#
+# Parameters:
+#   --url <string> (required)
+#       The URL to navigate to
+#   --wait-until <load | domcontentloaded | networkidle> (optional)
+#       When to consider navigation succeeded
+#       Default: "load"
+#
+# Usage:
+#   browser-devtools-cli navigation go-to [options]
+```
+
+#### Configuration
+
+```bash
+# Show current configuration
+browser-devtools-cli config
+# Output:
+# Current Configuration:
+#
+#   Daemon:
+#     Port:                    2020
+#     Session Idle (sec):      300
+#     Idle Check Interval:     30
+#
+#   Browser:
+#     Headless:                true
+#     Persistent:              false
+#     ...
+
+# Show config as JSON
+browser-devtools-cli config --json
+```
+
+#### Verbose/Debug Mode
+
+Enable verbose output for troubleshooting:
+
+```bash
+# Run any command with --verbose for detailed debug logs
+browser-devtools-cli --verbose navigation go-to --url "https://example.com"
+# Output:
+# [2025-01-26T10:00:00.000Z] [DEBUG] Verbose mode enabled
+# [2025-01-26T10:00:00.001Z] [DEBUG] CLI version: 0.5.0
+# [2025-01-26T10:00:00.001Z] [DEBUG] Node version: v20.10.0
+# [2025-01-26T10:00:00.001Z] [DEBUG] Platform: darwin
+# [2025-01-26T10:00:00.002Z] [DEBUG] Checking if daemon is running on port 2020
+# [2025-01-26T10:00:00.010Z] [DEBUG] Daemon health check result: running
+# [2025-01-26T10:00:00.011Z] [DEBUG] Calling tool: navigation_go-to
+# [2025-01-26T10:00:00.011Z] [DEBUG] Tool input: { url: "https://example.com" }
+# ...
+```
+
+#### Tool Search
+
+Find tools by keyword:
+
+```bash
+# Search for tools related to "screenshot"
+browser-devtools-cli tools search screenshot
+# Output:
+# Tools matching "screenshot" (2 found):
+#
+#   content/take-screenshot
+#     Takes a screenshot of the current page or a specific element.
+#
+#   figma/compare-page-with-design
+#     Compares the CURRENT PAGE UI against a Figma design snapshot...
+
+# Search for tools related to "network"
+browser-devtools-cli tools search network
+```
+
+#### Shell Completions
+
+Enable tab completion for faster command entry. Shell completions require a one-time setup:
+
+**For Bash:**
+```bash
+# Option 1: Add to ~/.bashrc (recommended)
+echo 'eval "$(browser-devtools-cli completion bash)"' >> ~/.bashrc
+source ~/.bashrc
+
+# Option 2: Or add manually to ~/.bashrc
+eval "$(browser-devtools-cli completion bash)"
+```
+
+**For Zsh (macOS default):**
+```bash
+# Option 1: Add to ~/.zshrc (recommended)
+echo 'eval "$(browser-devtools-cli completion zsh)"' >> ~/.zshrc
+source ~/.zshrc
+
+# Option 2: Or add manually to ~/.zshrc
+eval "$(browser-devtools-cli completion zsh)"
+```
+
+**Using with npx:**
+```bash
+# If using npx instead of global install:
+echo 'eval "$(npx -y browser-devtools-cli completion zsh)"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+After setup, press TAB for completions:
+```bash
+browser-devtools-cli dae<TAB>        # Completes to "daemon"
+browser-devtools-cli daemon st<TAB>  # Shows "start", "stop", "status", "restart"
+browser-devtools-cli --<TAB>         # Shows all global options
+```
+
+#### Interactive REPL Mode
+
+Start an interactive session for continuous command entry:
+
+```bash
+# Start in headless mode (default)
+browser-devtools-cli interactive
+
+# Start with visible browser window
+browser-devtools-cli --no-headless interactive
+
+# Start with persistent context (preserves cookies, localStorage)
+browser-devtools-cli --no-headless --persistent interactive
+
+# Aliases
+browser-devtools-cli repl
+browser-devtools-cli --no-headless repl
+```
+
+**Example session:**
+
+```
+Browser DevTools CLI - Interactive Mode
+Type "help" for available commands, "exit" to quit
+
+browser> navigation go-to --url "https://example.com"
+url: https://example.com/
+status: 200
+ok: true
+
+browser> content take-screenshot --name "homepage"
+path: /path/to/homepage.png
+
+browser> interaction click --ref "Login"
+clicked: true
+
+browser> interaction fill --ref "Email" --value "test@example.com"
+filled: true
+
+browser> tools search screenshot
+Found 2 tools:
+  content_take-screenshot - Take a screenshot of the current page
+  content_take-pdf - Generate a PDF of the current page
+
+browser> daemon info
+Version: 0.5.0
+Uptime: 5m 23s
+Sessions: 1
+Port: 2020
+
+browser> session list
+Active sessions: 1
+  #default (idle: 30s)
+
+browser> config
+Current Configuration:
+  port = 2020
+  headless = false
+  persistent = true
+  ...
+
+browser> exit
+Goodbye!
+```
+
+**Available commands in interactive mode:**
+
+| Command | Description |
+|---------|-------------|
+| `help` | Show available commands |
+| `exit`, `quit` | Exit interactive mode |
+| `status` | Show daemon status summary |
+| `config` | Show current configuration |
+| `daemon <cmd>` | Daemon management (start, stop, restart, status, info) |
+| `session <cmd>` | Session management (list, info, delete) |
+| `tools <cmd>` | Tool discovery (list, search, info) |
+| `update` | Check for CLI updates |
+| `<domain> <tool>` | Execute a tool |
+
+#### Check for Updates
+
+Keep your CLI up to date:
+
+```bash
+# Check for updates without installing
+browser-devtools-cli update --check
+# Output:
+# Checking for updates...
+#
+#   Current version:  0.5.0
+#   Latest version:   0.5.1
+#
+# ⚠ Update available: 0.5.0 → 0.5.1
+#
+# To update, run:
+#   npm install -g browser-devtools-mcp@latest
+
+# Check and install updates interactively
+browser-devtools-cli update
+# Output:
+# ...
+# Do you want to update now? (y/N) y
+# Updating...
+# ✓ Update complete!
+```
+
+#### Shell Script Example
+
+```bash
+#!/bin/bash
+SESSION="test-$(date +%s)"
+CLI="browser-devtools-cli --json --quiet --session-id $SESSION"
+
+# Navigate
+$CLI navigation go-to --url "https://example.com"
+
+# Get text content
+CONTENT=$($CLI content get-as-text)
+echo "Page content: $CONTENT"
+
+# Take screenshot
+$CLI content take-screenshot --name "test-result"
+
+# Cleanup
+browser-devtools-cli session delete $SESSION
+```
+
+### Daemon Architecture
+
+The CLI uses a daemon server architecture for efficient browser management:
+
+1. **Auto-start**: The daemon starts automatically when you run any tool command
+2. **Shared browser**: Multiple CLI invocations share the same browser instance
+3. **Session isolation**: Each session ID gets its own isolated browser context
+4. **Auto-cleanup**: Idle sessions are automatically cleaned up after inactivity
+
+The daemon listens on port 2020 by default. Use `--port` to specify a different port.
+
 ## Configuration
 
 The server can be configured using environment variables:

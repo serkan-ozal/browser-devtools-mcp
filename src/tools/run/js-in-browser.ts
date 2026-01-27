@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -58,7 +58,7 @@ The structure and type of this value are not constrained and depend entirely on 
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: JsInBrowserInput
     ): Promise<JsInBrowserOutput> {
         const result: any = await context.page.evaluate(args.script);

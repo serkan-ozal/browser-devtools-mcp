@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -55,7 +55,7 @@ The output includes the page URL, title, and a YAML-formatted accessibility tree
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: TakeSnapshotInput
     ): Promise<TakeSnapshotOutput> {
         const snapshot: string = await context.page

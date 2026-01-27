@@ -1,6 +1,6 @@
 import { ZodRawShape } from 'zod';
 
-import { McpSessionContext } from '../context';
+import { ToolSessionContext } from '../context';
 
 export type ToolInputSchema = ZodRawShape;
 export type ToolOutputSchema = ZodRawShape;
@@ -18,5 +18,5 @@ export interface Tool {
     description(): string;
     inputSchema(): ToolInputSchema;
     outputSchema(): ToolOutputSchema;
-    handle(context: McpSessionContext, args: ToolInput): Promise<ToolOutput>;
+    handle(context: ToolSessionContext, args: ToolInput): Promise<ToolOutput>;
 }

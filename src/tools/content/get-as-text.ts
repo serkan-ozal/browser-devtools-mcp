@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -58,7 +58,7 @@ export class GetAsText implements Tool {
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: GetAsTextInput
     ): Promise<GetAsTextOutput> {
         const { selector, maxLength } = args;

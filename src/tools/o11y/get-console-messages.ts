@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -158,7 +158,7 @@ number than the last one received.`),
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: GetConsoleMessagesInput
     ): Promise<GetConsoleMessagesOutput> {
         const consoleMessageLevelCodeThreshold:

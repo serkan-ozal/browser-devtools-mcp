@@ -132,3 +132,10 @@ export const FIGMA_ACCESS_TOKEN: string | undefined =
     _envStr('FIGMA_ACCESS_TOKEN') ?? '';
 export const FIGMA_API_BASE_URL: string =
     _envStr('FIGMA_API_BASE_URL') ?? 'https://api.figma.com/v1';
+
+// Daemon Configs
+export const DAEMON_PORT: number = _envInt('DAEMON_PORT') ?? 2020;
+export const DAEMON_SESSION_IDLE_SECONDS: number =
+    _envInt('DAEMON_SESSION_IDLE_SECONDS') ?? 300;
+export const DAEMON_SESSION_IDLE_CHECK_SECONDS: number =
+    _envInt('DAEMON_SESSION_IDLE_CHECK_SECONDS') ?? 30;

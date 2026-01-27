@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -246,7 +246,7 @@ Important:
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: ResizeWindowInput
     ): Promise<ResizeWindowOutput> {
         const state: WindowState = args.state ?? 'normal';

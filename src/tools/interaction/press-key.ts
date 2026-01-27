@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -147,7 +147,7 @@ Execution logic:
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: PressKeyInput
     ): Promise<PressKeyOutput> {
         /**

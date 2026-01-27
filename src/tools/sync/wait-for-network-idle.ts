@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -148,7 +148,7 @@ Notes:
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: WaitForNetworkIdleInput
     ): Promise<WaitForNetworkIdleOutput> {
         const timeoutMs: number = args.timeoutMs ?? DEFAULT_TIMEOUT_MS;

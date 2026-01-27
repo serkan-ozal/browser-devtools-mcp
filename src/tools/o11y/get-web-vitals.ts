@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -563,7 +563,7 @@ Guidance:
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: GetWebVitalsInput
     ): Promise<GetWebVitalsOutput> {
         const waitMs: number = args.waitMs ?? DEFAULT_WAIT_MS;

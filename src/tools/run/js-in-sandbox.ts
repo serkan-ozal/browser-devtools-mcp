@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -125,7 +125,7 @@ If error occurs, returns { error, logs }.`),
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: JsInSandboxInput
     ): Promise<JsInSandboxOutput> {
         const logs: Array<SandboxConsoleLog> = [];

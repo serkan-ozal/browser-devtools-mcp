@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -143,7 +143,7 @@ export class SaveAsPdf implements Tool {
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: SaveAsPdfInput
     ): Promise<SaveAsPdfOutput> {
         const filename: string = `${args.name || DEFAULT_NAME}-${formattedTimeForFilename()}.pdf`;

@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -427,7 +427,7 @@ Operational note for MCP users:
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: GetElementForComponentInput
     ): Promise<GetElementForComponentOutput> {
         const anchorSelector: string | undefined = args.anchorSelector;

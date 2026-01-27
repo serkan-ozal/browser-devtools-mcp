@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import { clearStub } from './stub-controller';
 import {
     Tool,
@@ -52,7 +52,7 @@ Clears stubs installed.
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: ClearInput
     ): Promise<ClearOutput> {
         const clearedCount: number = clearStub(

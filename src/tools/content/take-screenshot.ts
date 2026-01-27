@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -334,7 +334,7 @@ export class TakeScreenshot implements Tool {
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: TakeScreenshotInput
     ): Promise<TakeScreenshotOutput> {
         const screenshotType: ScreenshotType =

@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -106,7 +106,7 @@ By default, all <script> tags are removed from the output unless "removeScripts"
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: GetAsHtmlInput
     ): Promise<GetAsHtmlOutput> {
         const {

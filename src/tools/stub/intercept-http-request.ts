@@ -1,4 +1,4 @@
-import { McpSessionContext } from '../../context';
+import { ToolSessionContext } from '../../context';
 import {
     Tool,
     ToolInput,
@@ -136,7 +136,7 @@ Notes:
     }
 
     async handle(
-        context: McpSessionContext,
+        context: ToolSessionContext,
         args: InterceptHttpRequestInput
     ): Promise<InterceptHttpRequestOutput> {
         await ensureRoutingInstalled(context.browserContext);
