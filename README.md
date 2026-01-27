@@ -109,6 +109,16 @@ Browser DevTools MCP server supports the following CLI arguments for configurati
 - `--transport <stdio|streamable-http>` - Configures the transport protocol (defaults to `stdio`).
 - `--port <number>` – Configures the port number to listen on when using `streamable-http` transport (defaults to `3000`).
 
+### Install as AI Agent Skill
+
+Install browser automation capabilities as a skill for AI coding agents (Claude Code, Cursor, Windsurf, etc.) using the [skills.sh](https://skills.sh) ecosystem:
+
+```bash
+npx skills add serkan-ozal/browser-devtools-mcp
+```
+
+This installs the CLI skill that enables AI agents to automate browsers for web testing, screenshots, form filling, accessibility audits, performance analysis, and more. See the [CLI Skills Documentation](skills/browser-devtools-cli/SKILL.md) for details.
+
 ## MCP Client Configuration
 
 ### Claude Desktop
