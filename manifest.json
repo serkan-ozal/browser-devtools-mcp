@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "browser-devtools-mcp",
   "display_name": "Browser DevTools MCP",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "MCP Server for Browser Dev Tools",
   "long_description": "Browser DevTools MCP exposes a Playwright-powered browser runtime to AI agents, enabling deep, bidirectional debugging and interaction with live web pages. It supports both visual understanding and code-level inspection of browser state, making it ideal for AI-driven exploration, diagnosis, and automation.",
   "author": {

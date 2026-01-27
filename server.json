@@ -11,7 +11,9 @@
     {
       "src": "https://raw.githubusercontent.com/serkan-ozal/browser-devtools-mcp/main/public/icon.svg",
       "mimeType": "image/svg+xml",
-      "sizes": ["any"]
+      "sizes": [
+        "any"
+      ]
     }
   ],
   "repository": {
@@ -54,13 +56,13 @@
       }
     }
   ],
-  "version": "0.1.4",
+  "version": "0.1.5",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "browser-devtools-mcp",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "transport": {
         "type": "stdio"
       },

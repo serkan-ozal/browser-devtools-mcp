@@ -1,6 +1,6 @@
 {
   "name": "browser-devtools-mcp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "MCP Server for Browser Dev Tools",
   "private": false,
   "type": "commonjs",
