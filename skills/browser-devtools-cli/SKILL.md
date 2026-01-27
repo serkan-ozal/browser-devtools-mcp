@@ -1,3 +1,9 @@
+---
+name: browser-devtools-cli
+description: Automates browser interactions using Playwright for web testing, debugging, and automation. Use when the user needs to navigate websites, take screenshots, fill forms, click elements, extract page content (HTML/text), audit accessibility (ARIA/AX tree), measure Web Vitals performance, monitor console logs and HTTP requests, mock API responses, execute JavaScript in browser, inspect React components, or compare UI with Figma designs.
+allowed-tools: Bash(browser-devtools-cli:*)
+---
+
 # Browser DevTools CLI
 
 Command-line interface for browser automation, debugging, and testing using Playwright.
