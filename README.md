@@ -913,6 +913,25 @@ The CLI uses a daemon server architecture for efficient browser management:
 
 The daemon listens on port 2020 by default. Use `--port` to specify a different port.
 
+### CLI Skills Documentation
+
+Comprehensive documentation for AI agents and automation is available in the [skills/browser-devtools-cli](skills/browser-devtools-cli) directory:
+
+- **[SKILL.md](skills/browser-devtools-cli/SKILL.md)** - Main CLI reference with global options, commands, and workflow examples
+- **Domain References** (in `references/` subdirectory):
+  - [navigation.md](skills/browser-devtools-cli/references/navigation.md) - Page navigation (go-to, back, forward, reload)
+  - [content.md](skills/browser-devtools-cli/references/content.md) - Content extraction (screenshot, PDF, HTML, text)
+  - [interaction.md](skills/browser-devtools-cli/references/interaction.md) - User interactions (click, fill, hover, scroll)
+  - [a11y.md](skills/browser-devtools-cli/references/a11y.md) - Accessibility snapshots (ARIA, AX tree)
+  - [o11y.md](skills/browser-devtools-cli/references/o11y.md) - Observability (Web Vitals, console, HTTP, traces)
+  - [run.md](skills/browser-devtools-cli/references/run.md) - JavaScript execution (browser, sandbox)
+  - [stub.md](skills/browser-devtools-cli/references/stub.md) - HTTP mocking (intercept, mock, clear)
+  - [sync.md](skills/browser-devtools-cli/references/sync.md) - Synchronization (wait for network idle)
+  - [react.md](skills/browser-devtools-cli/references/react.md) - React DevTools integration
+  - [figma.md](skills/browser-devtools-cli/references/figma.md) - Figma design comparison
+
+These skill files are optimized for AI agent consumption with non-interactive command examples, JSON output flags, and session-based workflow patterns.
+
 ## Configuration
 
 The server can be configured using environment variables:
